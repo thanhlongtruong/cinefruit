@@ -10,7 +10,12 @@ class MoviePage extends StatefulWidget {
 }
 
 class _MoviePageState extends State<MoviePage> {
-  List<Cinema> cinemas_ = cinemas;
+  List<Movie> movies_ = movies;
+  @override
+  void setState(VoidCallback fn) {
+    // TODO: implement setState
+    super.setState(fn);
+  }
 
   var inputSearch = TextEditingController();
 
@@ -30,7 +35,7 @@ class _MoviePageState extends State<MoviePage> {
         decoration: BoxDecoration(
           boxShadow: [
             BoxShadow(
-              color: Colors.amberAccent,
+              color: Colors.blue.shade300,
               blurRadius: 10,
               offset: Offset(0, 4),
             ),
@@ -52,41 +57,97 @@ class _MoviePageState extends State<MoviePage> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       backgroundColor: Colors.black,
-      body: Column(
+      body: Stack(
         children: [
-          Center(
-            child: Container(
-              color: Colors.blue,
-              height: 40,
-              width: MediaQuery.of(context).size.width - 60,
-              margin: EdgeInsets.only(top: 100),
-              child: TextField(
-                decoration: InputDecoration(
-                  hintText: 'Search movie',
-                  fillColor: Colors.white,
-                ),
-              ),
+          Positioned(
+            child: Padding(
+              padding: EdgeInsets.only(top: 10),
+              child:
+                  movies_.isNotEmpty
+                      ? GridView(
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          mainAxisSpacing: 12,
+                          crossAxisSpacing: 14,
+                          childAspectRatio: 0.69,
+                        ),
+                        children:
+                            movies_
+                                .map((cinema) => buildItem(cinema.urlImage))
+                                .toList(),
+                      )
+                      : Center(
+                        child: Text(
+                          textAlign: TextAlign.justify,
+                          "Không tìm thấy phim",
+                          style: TextStyle(color: Colors.white, fontSize: 18),
+                        ),
+                      ),
             ),
           ),
-          Expanded(
-            child: Padding(
-              padding: EdgeInsets.all(5),
-              child: GridView(
-                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 2,
-                  mainAxisSpacing: 12,
-                  crossAxisSpacing: 12,
-                  childAspectRatio: 0.69,
+          Positioned(
+            top: 70,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: Container(
+                height: 50,
+                width: MediaQuery.of(context).size.width - 60,
+                alignment: Alignment.center,
+                child: TextField(
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w400,
+                    fontFamily: "monospace",
+                  ),
+                  controller: inputSearch,
+                  textAlign: TextAlign.justify,
+                  decoration: InputDecoration(
+                    hintText: 'Search movie',
+                    fillColor: Colors.white,
+                    filled: true,
+                    prefixIcon: Icon(Icons.search_rounded),
+                    suffixIcon:
+                        inputSearch.text.isNotEmpty
+                            ? IconButton(
+                              icon: Icon(Icons.clear),
+                              onPressed: () {
+                                inputSearch.clear();
+                                funcSearch('');
+                                setState(() {});
+                              },
+                            )
+                            : null,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30),
+                      borderSide: BorderSide(color: Colors.amberAccent),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(30),
+                      borderSide: BorderSide(color: Colors.amberAccent),
+                    ),
+
+                    contentPadding: EdgeInsets.symmetric(vertical: 0),
+                  ),
+
+                  onChanged: funcSearch,
                 ),
-                children:
-                    cinemas_
-                        .map((cinema) => buildItem(cinema.urlImage))
-                        .toList(),
               ),
             ),
           ),
         ],
       ),
     );
+  }
+
+  void funcSearch(String input) {
+    final suggest =
+        movies.where((movie) {
+          final name = movie.name.trim().toLowerCase();
+          final input_ = input.trim().toLowerCase();
+          return name.contains(input_);
+        }).toList();
+
+    setState(() => movies_ = suggest);
   }
 }
