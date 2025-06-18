@@ -1,36 +1,49 @@
 class Movie {
-  final String id;
-  final String name;
-  final String urlImage;
-  final String? description;
+  String? id;
+  String? name;
+  String? urlImage;
+  String? description;
+  String? video;
+  String? releaseDate;
+  double? rate;
+  double? price;
+  String? duration;  
 
   Movie({
     required this.id,
     required this.name,
     required this.urlImage,
-    this.description,
+    required this.description,
+    required this.video,
+    required this.releaseDate,
+    required this.rate,
+    required this.price,
+    required this.duration,
   });
-}
 
-final List<Movie> movies = [
-  Movie(id: "1", name: "Lilo & Stitch", urlImage: "assets/images/phim_1.png"),
-  Movie(
-    id: "2",
-    name: "Lost in Starlight",
-    urlImage: "assets/images/phim_2.png",
-  ),
-  Movie(id: "3", name: "The Last of Us", urlImage: "assets/images/phim_3.png"),
-  Movie(id: "4", name: "Until Dawn", urlImage: "assets/images/phim_4.png"),
-  Movie(
-    id: "5",
-    name: "A Minecraft Movie",
-    urlImage: "assets/images/phim_5.png",
-  ),
-  Movie(
-    id: "6",
-    name: "Mission: Impossible - The Final Reckoning",
-    urlImage: "assets/images/phim_6.png",
-  ),
-  Movie(id: "7", name: "Dept. Q", urlImage: "assets/images/phim_7.png"),
-  Movie(id: "8", name: "Sinners", urlImage: "assets/images/phim_8.png"),
-];
+  Movie.fromJson(Map<String, dynamic> json) {
+    id = json["id_"];
+    name = json["name"];
+    urlImage = json["urlImage"];
+    description = json["description"];
+    video = json["video"];
+    releaseDate = json["releaseDate"];
+    rate = json["rate"];
+    price = json["price"];
+    duration = json["duration"];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data["name"] = name;
+    data["urlImage"] = urlImage;
+    data["description"] = description;
+    data["video"] = video;
+    data["releaseDate"] = releaseDate;
+    data["rate"] = rate;
+    data["price"] = price;
+    data["duration"] = duration;
+    return data;
+  }
+
+}

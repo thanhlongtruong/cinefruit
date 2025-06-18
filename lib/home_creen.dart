@@ -1,7 +1,10 @@
-import 'package:ceni_fruit/movie_page.dart';
-import 'package:ceni_fruit/home_page.dart';
-import 'package:ceni_fruit/theatre_page.dart';
-import 'package:ceni_fruit/user_page.dart';
+import 'dart:ui';
+
+import 'package:ceni_fruit/pages/booked_ticket_page.dart';
+import 'package:ceni_fruit/pages/movie_page.dart';
+import 'package:ceni_fruit/pages/home_page.dart';
+import 'package:ceni_fruit/pages/cinema_page.dart';
+import 'package:ceni_fruit/pages/user_page.dart';
 import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
@@ -16,44 +19,55 @@ class HomeCreen extends StatefulWidget {
 }
 
 class _HomeCreenState extends State<HomeCreen> {
-  int index = 1;
+  int index = 0;
 
   @override
   Widget build(BuildContext context) {
-    final creens = [MoviePage(), HomePage(), TheatrePage(), UserPage()];
+    final creens = [HomePage(), CinemaPage(), BookedTicketPage(), UserPage()];
 
-    final items = <Widget>[
-      Padding(
-        padding: EdgeInsets.all(6), // chỉnh giá trị padding theo ý bạn
-        child: Icon(Maki.cinema, size: 25),
+    final items = <BottomNavigationBarItem>[
+      BottomNavigationBarItem(
+        icon: Icon(Icons.home_rounded, size: 25),
+        label: "Trang chủ",
       ),
-      Padding(
-        padding: EdgeInsets.all(6),
-        child: Icon(Icons.home_rounded, size: 25),
+      BottomNavigationBarItem(
+        icon: Icon(Icons.theaters_rounded, size: 25),
+        label: "Rạp",
       ),
-      Padding(
-        padding: EdgeInsets.all(6),
-        child: Icon(Icons.theaters_rounded, size: 25),
+      BottomNavigationBarItem(
+        icon: Icon(FontAwesomeIcons.ticket, size: 25),
+        label: "Vé",
       ),
-      Padding(
-        padding: EdgeInsets.all(6),
-        child: FaIcon(FontAwesomeIcons.user, size: 25),
+      BottomNavigationBarItem(
+        icon: Icon(FontAwesomeIcons.user, size: 25),
+        label: "Tôi",
       ),
     ];
 
     return Scaffold(
       extendBody: true,
-      bottomNavigationBar: Theme(
-        data: Theme.of(
-          context,
-        ).copyWith(iconTheme: IconThemeData(color: Colors.white)),
-        child: CurvedNavigationBar(
-          backgroundColor: Colors.transparent,
-          color: Colors.black38,
-          height: 60,
-          index: index,
-          items: items,
-          onTap: (index) => setState(() => this.index = index),
+      bottomNavigationBar: Container(
+        margin: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
+
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(15),
+          child: Theme(
+            data: Theme.of(context).copyWith(
+              splashFactory: NoSplash.splashFactory,
+              highlightColor: Colors.transparent,
+            ),
+            child: BottomNavigationBar(
+              backgroundColor: Colors.black.withOpacity(0.85),
+              unselectedItemColor: Colors.grey,
+              selectedItemColor: Colors.cyan,
+              items: items,
+              currentIndex: index,
+              type: BottomNavigationBarType.fixed,
+              showSelectedLabels: false,
+              showUnselectedLabels: false,
+              onTap: (i) => setState(() => index = i),
+            ),
+          ),
         ),
       ),
       body: creens[index],

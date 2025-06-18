@@ -1,3 +1,4 @@
+import 'package:ceni_fruit/config/styles.dart';
 import 'package:ceni_fruit/login_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -182,11 +183,20 @@ class _SignUpCreenState extends State<SignUpCreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "Sign up",
+                    "SIGN UP",
                     style: TextStyle(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 26,
-                      color: Colors.white,
+                      color: colorTextApp,
+                      fontSize: textfontSizeTitleAppBar,
+                      fontFamily: fontApp,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 10,
+                      shadows: [
+                        Shadow(
+                          color: Colors.purple,
+                          blurRadius: 20,
+                          offset: Offset(0, 8),
+                        ),
+                      ],
                     ),
                   ),
                   SizedBox(height: 50),
@@ -200,31 +210,19 @@ class _SignUpCreenState extends State<SignUpCreen> {
                   SizedBox(height: 50),
                   Align(
                     alignment: Alignment.centerRight,
-                    child: Container(
-                      width: 130,
-                      height: 50,
-
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(30),
-                        gradient: LinearGradient(
-                          colors: [Color(0xfff7b858), Color(0xfffca148)],
-                        ),
+                    child: ElevatedButton(
+                      onPressed: () {},
+                      style: ButtonStyle(
+                        backgroundColor: WidgetStatePropertyAll(colorButton),
                       ),
-
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            "SIGN UP",
-                            style: TextStyle(
-                              fontWeight: FontWeight.w500,
-                              fontSize: 17,
-                              color: Colors.white,
-                            ),
-                          ),
-                          SizedBox(width: 10),
-                          Icon(Icons.arrow_forward, color: Colors.white),
-                        ],
+                      child: Text(
+                        "SIGN UP",
+                        style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          fontSize: textfontSizeApp,
+                          color: colorTextApp,
+                          letterSpacing: 3,
+                        ),
                       ),
                     ),
                   ),
@@ -241,9 +239,9 @@ class _SignUpCreenState extends State<SignUpCreen> {
                 Text(
                   "Already have account? ",
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: textfontSizeNote,
                     fontWeight: FontWeight.w400,
-                    color: Colors.white,
+                    color: colorTextApp,
                   ),
                 ),
                 InkWell(
@@ -256,7 +254,7 @@ class _SignUpCreenState extends State<SignUpCreen> {
                   child: Text(
                     "Sign in",
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: textfontSizeNote,
                       fontWeight: FontWeight.w400,
                       color: Color(0xfffca148),
                     ),

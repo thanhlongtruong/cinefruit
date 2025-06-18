@@ -1,0 +1,24 @@
+{
+  "data": [
+    {
+      "idMovie": "001",
+      "idRoom": "01",
+      "time": "13:00"
+    },
+    {
+      "idMovie": "001",
+      "idRoom": "01",
+      "time": "19:00"
+    },
+    {
+      "idMovie": "001",
+      "idRoom": "02",
+      "time": "22:30"
+    },
+    {
+      "idMovie": "001",
+      "idRoom": "03",
+      "time": "9:00"
+    }
+  ]
+}

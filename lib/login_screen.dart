@@ -1,3 +1,5 @@
+import 'package:ceni_fruit/config/styles.dart';
+import 'package:ceni_fruit/config/path_images.dart';
 import 'package:ceni_fruit/home_creen.dart';
 import 'package:ceni_fruit/sign_up_creen.dart';
 import 'package:flutter/material.dart';
@@ -14,7 +16,7 @@ class LoginScreen extends StatelessWidget {
       return Container(
         height: 50,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: colorTextApp,
           boxShadow: [
             BoxShadow(
               offset: Offset(3, 3),
@@ -44,7 +46,7 @@ class LoginScreen extends StatelessWidget {
       return Container(
         height: 50,
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: colorTextApp,
           boxShadow: [
             BoxShadow(
               offset: Offset(3, 3),
@@ -72,8 +74,6 @@ class LoginScreen extends StatelessWidget {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      resizeToAvoidBottomInset: false,
-
       body: Stack(
         children: [
           Positioned(
@@ -82,7 +82,7 @@ class LoginScreen extends StatelessWidget {
             child: Transform.rotate(
               angle: -20 * 3.141592653589793 / 180,
               child: Image.asset(
-                "assets/images/logo_cinefruit.png",
+                cinefruit,
                 width: 500,
                 height: 300,
                 fit: BoxFit.contain,
@@ -96,7 +96,7 @@ class LoginScreen extends StatelessWidget {
             child: Transform.rotate(
               angle: 37 * 3.141592653589793 / 180,
               child: Image.asset(
-                "assets/images/logo.png",
+                logoCinema,
                 width: 830,
                 height: 640,
                 fit: BoxFit.contain,
@@ -112,11 +112,20 @@ class LoginScreen extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "Login",
+                    "LOGIN",
                     style: TextStyle(
-                      fontWeight: FontWeight.w800,
-                      fontSize: 26,
-                      color: Colors.white,
+                      color: colorTextApp,
+                      fontSize: textfontSizeTitleAppBar,
+                      fontFamily: fontApp,
+                      fontWeight: FontWeight.bold,
+                      letterSpacing: 10,
+                      shadows: [
+                        Shadow(
+                          color: Colors.purple,
+                          blurRadius: 20,
+                          offset: Offset(0, 8),
+                        ),
+                      ],
                     ),
                   ),
                   SizedBox(height: 50),
@@ -126,38 +135,25 @@ class LoginScreen extends StatelessWidget {
                   SizedBox(height: 50),
                   Align(
                     alignment: Alignment.centerRight,
-                    child: InkWell(
-                      onTap: () {
-                        Navigator.push(
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.pushAndRemoveUntil(
                           context,
                           MaterialPageRoute(builder: (_) => HomeCreen()),
+                          (route) => false,
                         );
                       },
-                      child: Container(
-                        width: 120,
-                        height: 50,
+                      style: ButtonStyle(
+                        backgroundColor: WidgetStatePropertyAll(colorButton),
+                      ),
 
-                        decoration: BoxDecoration(
-                          borderRadius: BorderRadius.circular(30),
-                          gradient: LinearGradient(
-                            colors: [Color(0xfff7b858), Color(0xfffca148)],
-                          ),
-                        ),
-
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              "LOGIN",
-                              style: TextStyle(
-                                fontWeight: FontWeight.w500,
-                                fontSize: 17,
-                                color: Colors.white,
-                              ),
-                            ),
-                            SizedBox(width: 10),
-                            Icon(Icons.arrow_forward, color: Colors.white),
-                          ],
+                      child: Text(
+                        "LOGIN",
+                        style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          fontSize: textfontSizeApp,
+                          color: colorTextApp,
+                          letterSpacing: 3,
                         ),
                       ),
                     ),
@@ -175,9 +171,9 @@ class LoginScreen extends StatelessWidget {
                 Text(
                   "Don't have an account? ",
                   style: TextStyle(
-                    fontSize: 16,
+                    fontSize: textfontSizeNote,
                     fontWeight: FontWeight.w400,
-                    color: Colors.white,
+                    color: colorTextApp,
                   ),
                 ),
                 InkWell(
@@ -190,7 +186,7 @@ class LoginScreen extends StatelessWidget {
                   child: Text(
                     "Sign up",
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: textfontSizeNote,
                       fontWeight: FontWeight.w400,
                       color: Color(0xfffca148),
                     ),
