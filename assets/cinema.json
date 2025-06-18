@@ -1,0 +1,80 @@
+[
+  {
+    "name": "Galaxy Tân Bình",
+    "address": "246 Nguyễn Hồng Đào, Q.TB, TP.HCM",
+    "area": "TP. Hồ Chí Minh",
+    "urlImage": "assets/images/cinema.jpg"
+  },
+  {
+    "name": "Galaxy Nguyễn Du",
+    "address": "116 Nguyễn Du, Q.1, TP. Hồ Chí Minh",
+    "area": "TP. Hồ Chí Minh",
+    "urlImage": "assets/images/cinema.jpg"
+  },
+  {
+    "name": "Galaxy Quang Trung",
+    "address": "Lầu 3, CoopMart Foodcosa, 304A Quang Trung, P.11, Q. Gò Vấp, TP. Hồ Chí Minh",
+    "urlImage": "assets/images/cinema.jpg",
+    "area": "TP. Hồ Chí Minh"
+  },
+  {
+    "name": "Galaxy Trung Chánh",
+    "address": "Trung Tâm Văn Hóa Quận 12, 09 Quốc lộ 22, P. Trung Mỹ Tây, Q.12, TP. Hồ Chí Minh",
+    "area": "TP. Hồ Chí Minh",
+    "urlImage": "assets/images/cinema.jpg"
+  },
+  {
+    "name": "Galaxy Phạm Văn Chí",
+    "area": "TP. Hồ Chí Minh",
+    "address": "Platinum Plaza, 634 Bis Phạm Văn Chí, Phường 8, Quận 6 TP. Hồ Chí Minh",
+    "urlImage": "assets/images/cinema.jpg"
+  },
+  {
+    "name": "Galaxy Huỳnh Tấn Phát",
+    "area": "TP. Hồ Chí Minh",
+    "address": "Lầu 2 CoopMart, 1362 Huỳnh Tấn Phát, khu phố 1, Phường Phú Mỹ, Quận 7",
+    "urlImage": "assets/images/cinema.jpg"
+  },
+  {
+    "name": "Galaxy Nguyễn Văn Quá",
+    "area": "TP. Hồ Chí Minh",
+    "address": "119B Nguyễn Văn Quá, P. Đông Hưng Thuận, Q.12, TP. Hồ Chí Minh",
+    "urlImage": "assets/images/cinema.jpg"
+  },
+  {
+    "name": "Galaxy Linh Trung Thủ Đức",
+    "area": "TP. Hồ Chí Minh",
+    "address": "Siêu thị Co.opXtra Thủ Đức 934 QL1A, Phường Linh Trung, Quận Thủ Đức, Hồ Chí Minh",
+    "urlImage": "assets/images/cinema.jpg"
+  },
+  {
+    "name": "Galaxy Sala",
+    "area": "TP. Hồ Chí Minh",
+    "address": "Tầng 3, Thiso Mall Sala, 10 Mai Chí Thọ, Phường Thủ Thiêm, Thành phố Thủ Đức",
+    "urlImage": "assets/images/cinema.jpg"
+  },
+  {
+    "name": "Galaxy Parc Mall Q8",
+    "area": "TP. Hồ Chí Minh",
+    "address": "Tầng 4 TTTM Parc Mall, 547-549 Tạ Quang Bửu, Phường 4, Quận 8",
+    "urlImage": "assets/images/cinema.jpg"
+  },
+  {
+    "name": "Galaxy Co.opXtra Linh Trung",
+    "area": "TP. Hồ Chí Minh",
+    "address": "Tầng trệt, TTTM Co.opXtra Linh Trung, số 934 Quốc Lộ 1A, Phường Linh Trung, Quận Thủ Đức, Thành phố Hồ Chí Minh, Việt Nam",
+    "urlImage": "assets/images/cinema.jpg"
+  },
+  {
+    "name": "Galaxy Trường Chinh",
+    "area": "Tiền Giang",
+    "address": "Tầng 3 - Co.opMart TTTM Thắng Lợi - Số 2 Trường Chinh, Tây Thạnh, Tân Phú, Thành phố Hồ Chí Minh",
+    "urlImage": "assets/images/cinema.jpg"
+  },
+  {
+    "name": "Galaxy Cine+ Thiso Phan Huy Ích",
+    "area": "TP. Hồ Chí Minh",
+    "address": "Tầng 4 TTTM Thiso Mall Trường Chinh - Phan Huy Ích - 385 Phan Huy Ích, Phường 14, Quận Gò Vấp, TP. HCM",
+    "urlImage": "assets/images/cinema.jpg"
+  }
+]

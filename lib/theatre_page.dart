@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'package:ceni_fruit/model/cinema.dart';
+import 'package:ceni_fruit/theatre_detail.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -18,7 +20,7 @@ class _TheatrePageState extends State<TheatrePage> {
   }
 
   Future<void> _loadCinemas() async {
-    final String response = await rootBundle.loadString('assets/cinemas.json');
+    final String response = await rootBundle.loadString('assets/cinema.json');
     final data = jsonDecode(response);
     setState(() {
       cinemas = data;
@@ -86,10 +88,27 @@ class _TheatrePageState extends State<TheatrePage> {
         itemBuilder: (context, index) {
           final cinema = cinemas[index];
           return ListTile(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder:
+                      (_) => TheatreDetail(
+                        
+                        cinema: Cinema(
+                          name: cinema["name"],
+                          address: cinema["address"],
+                          urlImage: cinema["urlImage"],
+                          area: cinema["area"],
+                        ),
+                      ),
+                ),
+              );
+            },
             leading: ClipRRect(
               borderRadius: BorderRadius.circular(8),
               child: Image.asset(
-                cinema['image'],
+                cinema['urlImage'],
                 width: 70,
                 height: 70,
                 fit: BoxFit.cover,
@@ -102,12 +121,9 @@ class _TheatrePageState extends State<TheatrePage> {
             ),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
-              children: [Text(cinema['address']), Text(cinema['phone'])],
+              children: [Text(cinema['address'])],
             ),
-            trailing: Text(
-              cinema['distance'],
-              style: TextStyle(color: Colors.blue[900], fontSize: 13),
-            ),
+
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
               vertical: 8,

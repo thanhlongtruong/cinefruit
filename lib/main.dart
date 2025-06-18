@@ -1,4 +1,8 @@
+import 'package:ceni_fruit/booking_page.dart';
+import 'package:ceni_fruit/home_creen.dart';
+import 'package:ceni_fruit/home_page.dart';
 import 'package:ceni_fruit/splash_screen.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -26,7 +30,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
       ),
-      home: const SplashScreen(),
+      home: BookingPage(),
     );
   }
 }
