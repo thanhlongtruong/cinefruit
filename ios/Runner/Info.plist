@@ -44,14 +44,9 @@
 	<key>CADisableMinimumFrameDurationOnPhone</key>
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
-
-	
-	<key>NSPhotoLibraryUsagDescription</key>
-	<string>Pick an image from gallery</string>
-	<key>NSPhotoLibraryUsagDescription</key>
-	<string>Pick image from camera</string>
-
-	
 	<true/>
+
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This app needs access to the photo library to select images</string>
 </dict>
 </plist>
