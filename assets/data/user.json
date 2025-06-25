@@ -1,0 +1,9 @@
+{
+  "data": {
+    "_id": "user001",
+    "name": "aaaa",
+    "email": "travfruit@gmail.com",
+    "birthday": "11/11/2011",
+    "password": "travFruit"
+  }
+}

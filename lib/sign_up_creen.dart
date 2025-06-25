@@ -1,4 +1,5 @@
 import 'package:ceni_fruit/config/styles.dart';
+import 'package:ceni_fruit/config/style_login_register.dart';
 import 'package:ceni_fruit/login_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -14,130 +15,7 @@ class _SignUpCreenState extends State<SignUpCreen> {
   var passwordController = TextEditingController();
   var confirmPasswordController = TextEditingController();
   var nameController = TextEditingController();
-
-  Widget buildEmail() {
-    return Container(
-      height: 50,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            offset: Offset(3, 3),
-            blurRadius: 6,
-            color: Colors.grey.shade400,
-          ),
-        ],
-      ),
-      child: TextFormField(
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return "Enter your Email";
-          }
-          return null;
-        },
-        controller: emailController,
-        decoration: InputDecoration(
-          border: InputBorder.none,
-          contentPadding: EdgeInsets.only(top: 14),
-          prefixIcon: Icon(Icons.email_outlined),
-          hintText: "Enter your email",
-        ),
-      ),
-    );
-  }
-
-  Widget buildPassword() {
-    return Container(
-      height: 50,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            offset: Offset(3, 3),
-            blurRadius: 6,
-            color: Colors.grey.shade400,
-          ),
-        ],
-      ),
-      child: TextFormField(
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return "Enter your password";
-          }
-          return null;
-        },
-        controller: passwordController,
-        decoration: InputDecoration(
-          border: InputBorder.none,
-          contentPadding: EdgeInsets.only(top: 14),
-          prefixIcon: Icon(Icons.lock_outline_rounded),
-          hintText: "Enter your password",
-        ),
-      ),
-    );
-  }
-
-  Widget buildConfirm() {
-    return Container(
-      height: 50,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            offset: Offset(3, 3),
-            blurRadius: 6,
-            color: Colors.grey.shade400,
-          ),
-        ],
-      ),
-      child: TextFormField(
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return "Enter your password";
-          }
-          return null;
-        },
-        controller: confirmPasswordController,
-        decoration: InputDecoration(
-          border: InputBorder.none,
-          contentPadding: EdgeInsets.only(top: 14),
-          prefixIcon: Icon(Icons.lock_outline_rounded),
-          hintText: "Enter your password",
-        ),
-      ),
-    );
-  }
-
-  Widget buildName() {
-    return Container(
-      height: 50,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        boxShadow: [
-          BoxShadow(
-            offset: Offset(3, 3),
-            blurRadius: 6,
-            color: Colors.grey.shade400,
-          ),
-        ],
-      ),
-      child: TextFormField(
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return "Enter your name";
-          }
-          return null;
-        },
-        controller: nameController,
-        decoration: InputDecoration(
-          border: InputBorder.none,
-          contentPadding: EdgeInsets.only(top: 14),
-          prefixIcon: Icon(Icons.person),
-          hintText: "Enter your name",
-        ),
-      ),
-    );
-  }
+  var birthdayController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -174,56 +52,49 @@ class _SignUpCreenState extends State<SignUpCreen> {
               ),
             ),
           ),
+
           Positioned(
-            top: 230,
+            top: 180,
             left: 30,
             child: SizedBox(
               width: MediaQuery.of(context).size.width - 60,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    "SIGN UP",
-                    style: TextStyle(
-                      color: colorTextApp,
-                      fontSize: textfontSizeTitleAppBar,
-                      fontFamily: fontApp,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 10,
-                      shadows: [
-                        Shadow(
-                          color: Colors.purple,
-                          blurRadius: 20,
-                          offset: Offset(0, 8),
-                        ),
-                      ],
-                    ),
+                  Text("ĐĂNG KÍ", style: styleTopic),
+                  const SizedBox(height: spacingLarge),
+                  buildFeld("Nhập họ tên", nameController, Icon(Icons.person)),
+                  const SizedBox(height: spacingBig),
+                  buildFeld(
+                    "Nhập ngày sinh",
+                    birthdayController,
+                    Icon(Icons.person),
                   ),
-                  SizedBox(height: 50),
-                  buildName(),
-                  SizedBox(height: 25),
-                  buildEmail(),
-                  SizedBox(height: 25),
-                  buildPassword(),
-                  SizedBox(height: 25),
-                  buildConfirm(),
-                  SizedBox(height: 50),
+                  const SizedBox(height: spacingBig),
+                  buildFeld(
+                    "Nhập email",
+                    emailController,
+                    Icon(Icons.email_outlined),
+                  ),
+                  const SizedBox(height: spacingBig),
+                  buildFeld(
+                    "Nhập mật khẩu",
+                    passwordController,
+                    Icon(Icons.lock_outline_rounded),
+                  ),
+                  const SizedBox(height: spacingBig),
+                  buildFeld(
+                    "Nhập lại mật khẩu",
+                    confirmPasswordController,
+                    Icon(Icons.lock_outline_rounded),
+                  ),
+                  const SizedBox(height: spacingLarge),
                   Align(
                     alignment: Alignment.centerRight,
                     child: ElevatedButton(
                       onPressed: () {},
-                      style: ButtonStyle(
-                        backgroundColor: WidgetStatePropertyAll(colorButton),
-                      ),
-                      child: Text(
-                        "SIGN UP",
-                        style: TextStyle(
-                          fontWeight: FontWeight.w500,
-                          fontSize: textfontSizeApp,
-                          color: colorTextApp,
-                          letterSpacing: 3,
-                        ),
-                      ),
+                      style: buttonStyle,
+                      child: Text("Đăng kí", style: textStyleElevatedButton),
                     ),
                   ),
                 ],
@@ -237,12 +108,8 @@ class _SignUpCreenState extends State<SignUpCreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  "Already have account? ",
-                  style: TextStyle(
-                    fontSize: textfontSizeNote,
-                    fontWeight: FontWeight.w400,
-                    color: colorTextApp,
-                  ),
+                  "Bạn đã có tài khoản? ",
+                  style: textNoteBottomStyle(colorTextApp),
                 ),
                 InkWell(
                   onTap: () {
@@ -252,12 +119,8 @@ class _SignUpCreenState extends State<SignUpCreen> {
                     );
                   },
                   child: Text(
-                    "Sign in",
-                    style: TextStyle(
-                      fontSize: textfontSizeNote,
-                      fontWeight: FontWeight.w400,
-                      color: Color(0xfffca148),
-                    ),
+                    "Đăng nhập",
+                    style: textNoteBottomStyle(Color(0xfffca148)),
                   ),
                 ),
               ],

@@ -1,0 +1,14 @@
+{
+  "data": [
+    {
+      "_id": "ticket01",
+      "idMovieRoom": "001",
+      "seatNumber": ["A1", "B2", "C3"],
+      "idUser": "user01",
+      "paymentStatus": "pending",
+      "paymentMethod": "MOMO",
+      "createdAt": "22/02/2022 22:22:22",
+      "expiredAt": "22/02/2022 22:22:22"
+    }
+  ]
+}

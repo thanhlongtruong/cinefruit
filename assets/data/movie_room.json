@@ -1,24 +1,32 @@
 {
   "data": [
     {
+      "_id": "movie_room_01",
       "idMovie": "001",
       "idRoom": "01",
-      "time": "13:00"
+      "date": "18/05/2025",
+      "time": ["13:00", "16:01"]
     },
     {
-      "idMovie": "001",
-      "idRoom": "01",
-      "time": "19:00"
-    },
-    {
+      "_id": "movie_room_02",
       "idMovie": "001",
       "idRoom": "02",
-      "time": "22:30"
+      "date": "19/05/2025",
+      "time": ["19:00"]
     },
     {
+      "_id": "movie_room_03",
+      "idMovie": "002",
+      "idRoom": "02",
+      "date": "20/05/2025",
+      "time": ["22:30"]
+    },
+    {
+      "_id": "movie_room_04",
       "idMovie": "001",
       "idRoom": "03",
-      "time": "9:00"
+      "date": "18/05/2025",
+      "time": ["9:00"]
     }
   ]
 }

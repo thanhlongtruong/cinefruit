@@ -1,4 +1,4 @@
-class Movie {
+  class Movie {
   String? id;
   String? name;
   String? urlImage;
@@ -7,7 +7,7 @@ class Movie {
   String? releaseDate;
   double? rate;
   double? price;
-  String? duration;  
+  String? duration;
 
   Movie({
     required this.id,
@@ -22,7 +22,7 @@ class Movie {
   });
 
   Movie.fromJson(Map<String, dynamic> json) {
-    id = json["id_"];
+    id = json["_id"];
     name = json["name"];
     urlImage = json["urlImage"];
     description = json["description"];
@@ -45,5 +45,4 @@ class Movie {
     data["duration"] = duration;
     return data;
   }
-
 }

@@ -1,4 +1,5 @@
 import 'package:ceni_fruit/config/styles.dart';
+import 'package:ceni_fruit/config/style_login_register.dart';
 import 'package:ceni_fruit/config/path_images.dart';
 import 'package:ceni_fruit/home_creen.dart';
 import 'package:ceni_fruit/sign_up_creen.dart';
@@ -12,68 +13,8 @@ class LoginScreen extends StatelessWidget {
     var emailController = TextEditingController();
     var passwordController = TextEditingController();
 
-    Widget buildEmail() {
-      return Container(
-        height: 50,
-        decoration: BoxDecoration(
-          color: colorTextApp,
-          boxShadow: [
-            BoxShadow(
-              offset: Offset(3, 3),
-              blurRadius: 6,
-              color: Colors.grey.shade400,
-            ),
-          ],
-        ),
-        child: TextFormField(
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return "Enter your Email";
-            }
-          },
-          controller: emailController,
-          decoration: InputDecoration(
-            border: InputBorder.none,
-            contentPadding: EdgeInsets.only(top: 14),
-            prefixIcon: Icon(Icons.email_outlined),
-            hintText: "Enter your email",
-          ),
-        ),
-      );
-    }
-
-    Widget buildPassword() {
-      return Container(
-        height: 50,
-        decoration: BoxDecoration(
-          color: colorTextApp,
-          boxShadow: [
-            BoxShadow(
-              offset: Offset(3, 3),
-              blurRadius: 6,
-              color: Colors.grey.shade400,
-            ),
-          ],
-        ),
-        child: TextFormField(
-          validator: (value) {
-            if (value == null || value.isEmpty) {
-              return "Enter your password";
-            }
-          },
-          controller: passwordController,
-          decoration: InputDecoration(
-            border: InputBorder.none,
-            contentPadding: EdgeInsets.only(top: 14),
-            prefixIcon: Icon(Icons.lock_outline_rounded),
-            hintText: "Enter your password",
-          ),
-        ),
-      );
-    }
-
     return Scaffold(
-      backgroundColor: Colors.white,
+      resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
           Positioned(
@@ -103,6 +44,7 @@ class LoginScreen extends StatelessWidget {
               ),
             ),
           ),
+
           Positioned(
             top: 230,
             left: 30,
@@ -111,28 +53,20 @@ class LoginScreen extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    "LOGIN",
-                    style: TextStyle(
-                      color: colorTextApp,
-                      fontSize: textfontSizeTitleAppBar,
-                      fontFamily: fontApp,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 10,
-                      shadows: [
-                        Shadow(
-                          color: Colors.purple,
-                          blurRadius: 20,
-                          offset: Offset(0, 8),
-                        ),
-                      ],
-                    ),
+                  Text("ĐĂNG NHẬP", style: styleTopic),
+                  const SizedBox(height: spacingLarge),
+                  buildFeld(
+                    "Nhập email",
+                    emailController,
+                    Icon(Icons.email_outlined),
                   ),
-                  SizedBox(height: 50),
-                  buildEmail(),
-                  SizedBox(height: 25),
-                  buildPassword(),
-                  SizedBox(height: 50),
+                  const SizedBox(height: spacingBig),
+                  buildFeld(
+                    "Nhập mật khẩu",
+                    passwordController,
+                    Icon(Icons.lock_outline_rounded),
+                  ),
+                  const SizedBox(height: spacingLarge),
                   Align(
                     alignment: Alignment.centerRight,
                     child: ElevatedButton(
@@ -143,19 +77,9 @@ class LoginScreen extends StatelessWidget {
                           (route) => false,
                         );
                       },
-                      style: ButtonStyle(
-                        backgroundColor: WidgetStatePropertyAll(colorButton),
-                      ),
+                      style: buttonStyle,
 
-                      child: Text(
-                        "LOGIN",
-                        style: TextStyle(
-                          fontWeight: FontWeight.w500,
-                          fontSize: textfontSizeApp,
-                          color: colorTextApp,
-                          letterSpacing: 3,
-                        ),
-                      ),
+                      child: Text("Đăng nhập", style: textStyleElevatedButton),
                     ),
                   ),
                 ],
@@ -169,12 +93,8 @@ class LoginScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  "Don't have an account? ",
-                  style: TextStyle(
-                    fontSize: textfontSizeNote,
-                    fontWeight: FontWeight.w400,
-                    color: colorTextApp,
-                  ),
+                  "Bạn chưa có tài khoản? ",
+                  style: textNoteBottomStyle(colorTextApp),
                 ),
                 InkWell(
                   onTap: () {
@@ -184,12 +104,8 @@ class LoginScreen extends StatelessWidget {
                     );
                   },
                   child: Text(
-                    "Sign up",
-                    style: TextStyle(
-                      fontSize: textfontSizeNote,
-                      fontWeight: FontWeight.w400,
-                      color: Color(0xfffca148),
-                    ),
+                    "Đăng kí",
+                    style: textNoteBottomStyle(Color(0xfffca148)),
                   ),
                 ),
               ],

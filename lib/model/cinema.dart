@@ -8,7 +8,7 @@ class Cinema {
   Cinema({this.id, this.name, this.address, this.urlImage, this.area});
 
   Cinema.fromJson(Map<String, dynamic> json) {
-    id = json["id_"];
+    id = json["_id"];
     name = json["name"];
     address = json["address"];
     urlImage = json["urlImage"];

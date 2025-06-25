@@ -1,0 +1,30 @@
+{
+  "data": [
+    {
+      "_id": "order01",
+      "idMovieRoom": "movie_room_01",
+      "idUser": "order01",
+      "time": "order01",
+      "price": 10.0,
+      "paymentStatus": "paymentStatus",
+      "paymentMethod": "paymentMethod",
+      "discountCoin": 2,
+      "rewardCoin": 5,
+      "createdAt": "createdAt",
+      "expiredAt": "expiredAt"
+    },
+    {
+      "_id": "order02",
+      "idMovieRoom": "movie_room_02",
+      "idUser": "order01",
+      "time": "order01",
+      "price": 10.0,
+      "paymentStatus": "paymentStatus",
+      "paymentMethod": "paymentMethod",
+      "discountCoin": 2,
+      "rewardCoin": 5,
+      "createdAt": "createdAt",
+      "expiredAt": "expiredAt"
+    }
+  ]
+}

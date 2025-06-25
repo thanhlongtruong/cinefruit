@@ -18,7 +18,7 @@ class UserPage extends StatefulWidget {
 class _UserPageState extends State<UserPage> {
   File? _image;
   final picker = ImagePicker();
-  User? currentUser = User.instance;
+  bool currentUser = true;
 
   pickImage() async {
     final picked = await picker.pickImage(source: ImageSource.gallery);
@@ -63,7 +63,7 @@ class _UserPageState extends State<UserPage> {
             ),
             SizedBox(height: 40),
 
-            if (User.instance == null)
+            if (currentUser)
               ElevatedButton(
                 style: ButtonStyle(
                   shadowColor: WidgetStateProperty.all(shadowColorBox),

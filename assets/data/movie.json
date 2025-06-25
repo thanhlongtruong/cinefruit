@@ -1,7 +1,7 @@
 {
   "data": [
     {
-      "id_": "001",
+      "_id": "001",
       "name": "Deep Cover (2025)",
       "urlImage": "https://www.themoviedb.org/t/p/w600_and_h900_bestv2/euM8fJvfH28xhjGy25LiygxfkWc.jpg",
       "description": "A tale of resilience and survival. A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival. A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival. A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival. A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival. A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival. A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival.A tale of resilience and survival.",
@@ -11,9 +11,8 @@
       "price": 3.99,
       "duration": "1h 40m"
     },
-
     {
-      "id_": "002",
+      "_id": "002",
       "name": "Echoes of Time",
       "urlImage": "https://www.themoviedb.org/t/p/w600_and_h900_bestv2/6VYy5YPeenMpPACbEU3CYrZdiG1.jpg",
       "description": "Journey through the echoes of memories.",
@@ -24,7 +23,7 @@
       "duration": "122"
     },
     {
-      "id_": "003",
+      "_id": "003",
       "name": "Whispers in the Dark",
       "urlImage": "https://m.media-amazon.com/images/M/MV5BYjc0MzFkZmMtNDg2MS00Y2ViLThmYmItZTkyZTUxZjUzNTYzXkEyXkFqcGc@._V1_QL75_UX100_CR0,0,100,148_.jpg",
       "description": "A detective’s darkest case unfolds.",
@@ -35,7 +34,7 @@
       "duration": "100"
     },
     {
-      "id_": "004",
+      "_id": "004",
       "name": "Red Horizon",
       "urlImage": "https://m.media-amazon.com/images/M/MV5BMGMzNjQ3MTgtMmRlMy00YmQyLWI2YmMtYjJjOGZhOWRlZTFlXkEyXkFqcGc@._V1_QL75_UY148_CR1,0,100,148_.jpg",
       "description": "A space expedition goes awry.",
@@ -46,9 +45,9 @@
       "duration": "130"
     },
     {
-      "id_": "005",
+      "_id": "005",
       "name": "The Last Melody",
-      "urlImage": "https://bing.com/th/id_/OIP.LoYwEvYcaginL8MuPownJQAAAA?cb=thvnextc2&rs=1&pid_=ImgDetMain",
+      "urlImage": "https://bing.com/th/_id/OIP.LoYwEvYcaginL8MuPownJQAAAA?cb=thvnextc2&rs=1&p_id=ImgDetMain",
       "description": "A musician's haunting past.",
       "video": "",
       "releaseDate": "2024-05-20",
@@ -57,7 +56,7 @@
       "duration": "118"
     },
     {
-      "id_": "006",
+      "_id": "006",
       "name": "Fragments",
       "urlImage": "",
       "description": "Intertwined lives in shattered moments.",
@@ -68,7 +67,7 @@
       "duration": "98"
     },
     {
-      "id_": "007",
+      "_id": "007",
       "name": "Mirror World",
       "urlImage": "https://m.media-amazon.com/images/M/MV5BODZhZTBlOtYWUyMi00NjlhLTg1NjAtMDBkYTI2NGIzZmNlXkEyXkFqcGc@._V1_QL75_UX100_CR0,5,100,148_.jpg",
       "description": "Your reflection knows your secrets.",
@@ -79,7 +78,7 @@
       "duration": "105"
     },
     {
-      "id_": "008",
+      "_id": "008",
       "name": "Beyond the Stars",
       "urlImage": "https://m.media-amazon.com/images/M/MV5BODZhZTBlODItYWUyMi00NjlhLTg1NjAtMDBkYTI2NGIzZmNlXkEyXkFqcGc@._V1_QL75_UX100_CR0,5,100,148_.jpg",
       "description": "One final journey into the unknown.",
@@ -90,8 +89,8 @@
       "duration": "1h 40m"
     },
     {
-      "id_": "009",
-      "name": "Hid_den Truth",
+      "_id": "009",
+      "name": "H_idden Truth",
       "urlImage": "https://m.media-amazon.com/images/M/MV5BZjliNjAxYjUtNmI2OS00OWQ5LTgwOTctMTA3NmM0NTQ0NDY4XkEyXkFqcGc@._V1_QL75_UY148_CR0,0,100,148_.jpg",
       "description": "A secret that shakes the world.",
       "video": "",
@@ -101,7 +100,7 @@
       "duration": "110"
     },
     {
-      "id_": "010",
+      "_id": "010",
       "name": "Neon Shadows",
       "urlImage": "https://m.media-amazon.com/images/M/MV5BNmU3MWZjODktZDNjOS00OGYxLWFhNWQtNzExZjg5YzFmOTlhXkEyXkFqcGc@._V1_QL75_UY148_CR6,0,100,148_.jpg",
       "description": "A neon-lit noir of danger and desire.",
@@ -112,7 +111,7 @@
       "duration": "125"
     },
     {
-      "id_": "011",
+      "_id": "011",
       "name": "City of Dreams",
       "urlImage": "https://m.media-amazon.com/images/M/MV5BMTk0ODQwYTEtYjk1YS00ZjU3LThkZmMtNGNlMGUyMmFkYTE2XkEyXkFqcGc@._V1_QL75_UX100_CR0,0,100,148_.jpg",
       "description": "The rise and fall of ambition.",
@@ -123,7 +122,7 @@
       "duration": "113"
     },
     {
-      "id_": "012",
+      "_id": "012",
       "name": "Ghost Signal",
       "urlImage": "",
       "description": "A signal from the afterlife.",
@@ -134,7 +133,7 @@
       "duration": "108"
     },
     {
-      "id_": "013",
+      "_id": "013",
       "name": "The Archivist",
       "urlImage": "https://m.media-amazon.com/images/M/MV5BZTFjYzkwYWEtMjA5ZS00NThlLWI5ZDktZWU3M2EyNGMwNTVkXkEyXkFqcGc@._V1_QL75_UX100_CR0,0,100,148_.jpg",
       "description": "Secrets buried in old records.",
@@ -145,7 +144,7 @@
       "duration": "119"
     },
     {
-      "id_": "014",
+      "_id": "014",
       "name": "Parallel Minds",
       "urlImage": "https://m.media-amazon.com/images/M/MV5BZGMzNzE2OTAtZjQzMC00YzlkLTg4ZjEtMjFlNmJlZGIxZDgyXkEyXkFqcGc@._V1_QL75_UY148_CR2,0,100,148_.jpg",
       "description": "A shared mind across realities.",
@@ -156,7 +155,7 @@
       "duration": "1h 40m"
     },
     {
-      "id_": "015",
+      "_id": "015",
       "name": "Cold Frontier",
       "urlImage": "",
       "description": "Trapped in the Arctic, survival is key.",
@@ -167,7 +166,7 @@
       "duration": "106"
     },
     {
-      "id_": "016",
+      "_id": "016",
       "name": "Digital Soul",
       "urlImage": "https://m.media-amazon.com/images/M/MV5BZGE1Y2QzMGQtYjgxOC00NGJhLWI2ZjktZDVmNjU5NjhkYjUzXkEyXkFqcGc@._V1_QL75_UY148_CR82,0,100,148_.jpg",
       "description": "AI finds its humanity.",
@@ -178,7 +177,7 @@
       "duration": "121"
     },
     {
-      "id_": "017",
+      "_id": "017",
       "name": "Vanishing Point",
       "urlImage": "https://m.media-amazon.com/images/M/MV5BOWE1MDBiZjYtYjE5Ny00MGUxLWJhMTEtYTM5MjcyZjYzN2Q0XkEyXkFqcGc@._V1_QL75_UX100_CR0,1,100,148_.jpg",
       "description": "Disappearances in the desert.",
@@ -189,7 +188,7 @@
       "duration": "109"
     },
     {
-      "id_": "018",
+      "_id": "018",
       "name": "The Code Within",
       "urlImage": "https://m.media-amazon.com/images/M/MV5BMTI1MmNlOWItZmM0MS00N2NlLTlmNDItMWE1M2FhMjQzMDY5XkEyXkFqcGc@._V1_QL75_UX100_CR0,0,100,148_.jpg",
       "description": "A deadly algorithm spreads online.",
@@ -200,7 +199,7 @@
       "duration": "117"
     },
     {
-      "id_": "019",
+      "_id": "019",
       "name": "Burning Skies",
       "urlImage": "https://m.media-amazon.com/images/M/MV5BNjgxODA0MzA3OV5BMl5BanBnXkFtZTgwMzQ3OTkyNjE@._V1_QL75_UY148_CR1,0,100,148_.jpg",
       "description": "Air battles over war-torn lands.",
@@ -211,7 +210,7 @@
       "duration": "101"
     },
     {
-      "id_": "020",
+      "_id": "020",
       "name": "Winds of Change",
       "urlImage": "",
       "description": "A village faces its future.",

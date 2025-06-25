@@ -10,13 +10,13 @@ class InfoAccountPage extends StatefulWidget {
 }
 
 class _InfoAccountPageState extends State<InfoAccountPage> {
-  User? currentUser = User.instance;
+  // User? currentUser = User.instance;
 
   @override
   void initState() {
     super.initState();
-    nameController.text = User.instance?.name ?? "";
-    emailController.text = User.instance?.email ?? "";
+    // nameController.text = User.instance?.name ?? "";
+    // emailController.text = User.instance?.email ?? "";
     nameController.addListener(_onTextChanged);
     emailController.addListener(_onTextChanged);
   }
@@ -212,12 +212,12 @@ class _InfoAccountPageState extends State<InfoAccountPage> {
         alignment: Alignment.centerLeft,
         child: ElevatedButton(
           style: ButtonStyle(
-            backgroundColor: WidgetStatePropertyAll(
-              currentUser?.email == emailController.text &&
-                      currentUser?.name == nameController.text
-                  ? colorTextApp.withOpacity(opacityColorApp)
-                  : colorButton,
-            ),
+            // backgroundColor: WidgetStatePropertyAll(
+            //   currentUser?.email == emailController.text &&
+            //           currentUser?.name == nameController.text
+            //       ? colorTextApp.withOpacity(opacityColorApp)
+            //       : colorButton,
+            // ),
           ),
           onPressed: () => {},
           child: Text(

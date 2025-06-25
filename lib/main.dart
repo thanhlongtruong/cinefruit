@@ -1,11 +1,14 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ceni_fruit/model/user.dart';
-import 'package:ceni_fruit/splash_screen.dart';
+import 'package:intl/intl.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-void main() {
-  User(name: "Fruit", email: "travfruit@gmail.com", password: "travFruit");
+import 'package:ceni_fruit/screen/splash_screen.dart';
+
+void main() async {
+  Intl.defaultLocale = 'vi_VN';
+  await initializeDateFormatting('vi_VN', null);
   runApp(ProviderScope(child: MyApp()));
 }
 
@@ -21,17 +24,11 @@ class MyApp extends StatelessWidget {
     );
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
-        systemNavigationBarColor: Colors.transparent,
-        statusBarColor: Colors.transparent,
+        systemNavigationBarColor: Colors.white,
+        statusBarColor: Colors.white,
         statusBarIconBrightness: Brightness.light,
       ),
     );
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-      ),
-      home: SplashScreen(),
-    );
+    return MaterialApp(debugShowCheckedModeBanner: false, home: SplashScreen());
   }
 }

@@ -1,15 +1,9 @@
-import 'dart:ui';
-
 import 'package:ceni_fruit/pages/booked_ticket_page.dart';
-import 'package:ceni_fruit/pages/movie_page.dart';
 import 'package:ceni_fruit/pages/home_page.dart';
 import 'package:ceni_fruit/pages/cinema_page.dart';
 import 'package:ceni_fruit/pages/user_page.dart';
-import 'package:curved_navigation_bar/curved_navigation_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:fluttericon/maki_icons.dart';
-import 'package:fluttericon/font_awesome_icons.dart';
 
 class HomeCreen extends StatefulWidget {
   const HomeCreen({super.key});

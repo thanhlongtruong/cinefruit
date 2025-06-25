@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:ceni_fruit/config/styles.dart';
+import 'package:ceni_fruit/config/background_app.dart';
 import 'package:ceni_fruit/model/cinema.dart';
 import 'package:ceni_fruit/model/movie.dart';
 import 'package:ceni_fruit/data/area.dart';
@@ -10,7 +11,6 @@ import 'package:ceni_fruit/provider/cinema.dart';
 import 'package:ceni_fruit/provider/movie_room.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 class DetailMovieScreen extends StatefulWidget {
@@ -39,6 +39,7 @@ class _DetailMovieScreenState extends State<DetailMovieScreen> {
   @override
   void initState() {
     super.initState();
+
     loadMovieRoom().then((_) {
       loadCinemas();
     });
@@ -62,66 +63,71 @@ class _DetailMovieScreenState extends State<DetailMovieScreen> {
   }
 
   Future<String> loadCinemas() async {
-    cinemas = await ReadData().loadCinema();
-    fillterCinemas =
-        cinemas
-            .where(
-              (cinema) => movieRoom.any(
-                (mr) => widget.movie.id == mr.idMovie && cinema.id == mr.idRoom,
-              ),
-            )
-            .toList();
+    // cinemas = await ReadData().loadCinema();
+    fillterCinemas = cinemas
+        .where(
+          (cinema) => movieRoom.any(
+            (mr) => widget.movie.id == mr.idMovie && cinema.id == mr.idRoom,
+          ),
+        )
+        .toList();
     fillterCinemas.isNotEmpty
         ? fillterCinemas.insert(0, Cinema(name: "Tất cả rạp"))
         : fillterCinemas = [];
-    setState(() {});
+    // setState(() {});
     return "";
   }
 
   Future<String> loadMovieRoom() async {
-    movieRoom = await ReadDataJsonMovieRoom().loadMovieRoom();
+    // movieRoom = await ReadDataJsonMovieRoom().loadMovieRoom();
     setState(() {});
     return "";
   }
 
-  static const styleTextSlidingSegmnet = TextStyle(
-    fontSize: textfontSizeApp,
-    fontWeight: FontWeight.bold,
-  );
-
   Map<int, Widget> slidingSegments = <int, Widget>{
-    0: Text("Suất chiếu", style: styleTextSlidingSegmnet),
-    1: Text("Thông tin", style: styleTextSlidingSegmnet),
+    0: Text(
+      "Suất chiếu",
+      style: TextStyle(
+        fontSize: textfontSizeApp,
+        fontWeight: fontWeightSemiBold,
+        letterSpacing: letterSpacingSmall,
+      ),
+    ),
+    1: Text(
+      "Thông tin",
+      style: TextStyle(
+        fontSize: textfontSizeApp,
+        fontWeight: fontWeightSemiBold,
+        letterSpacing: letterSpacingSmall,
+      ),
+    ),
   };
 
   handleFillterCinemas(index, bool cinemaAndArea) {
     setState(() {
       if (cinemaAndArea) {
         selectArea = index;
-        fillterCinemas =
-            cinemas
-                .where(
-                  (cinema) => movieRoom.any(
-                    (mr) =>
-                        widget.movie.id == mr.idMovie &&
-                        cinema.id == mr.idRoom &&
-                        cinema.area.toString().trim().toLowerCase() ==
-                            areas[index].toString().trim().toLowerCase(),
-                  ),
-                )
-                .toList();
+        fillterCinemas = cinemas
+            .where(
+              (cinema) => movieRoom.any(
+                (mr) =>
+                    widget.movie.id == mr.idMovie &&
+                    cinema.id == mr.idRoom &&
+                    cinema.area.toString().trim().toLowerCase() ==
+                        areas[index].toString().trim().toLowerCase(),
+              ),
+            )
+            .toList();
 
         if (selectArea == 0) {
-          fillterCinemas =
-              cinemas
-                  .where(
-                    (cinema) => movieRoom.any(
-                      (mr) =>
-                          widget.movie.id == mr.idMovie &&
-                          cinema.id == mr.idRoom,
-                    ),
-                  )
-                  .toList();
+          fillterCinemas = cinemas
+              .where(
+                (cinema) => movieRoom.any(
+                  (mr) =>
+                      widget.movie.id == mr.idMovie && cinema.id == mr.idRoom,
+                ),
+              )
+              .toList();
         }
 
         selectCinema = 0;
@@ -177,62 +183,53 @@ class _DetailMovieScreenState extends State<DetailMovieScreen> {
           style: const TextStyle(
             color: colorTextApp,
             fontSize: textfontSizeApp,
+            fontWeight: fontWeightMedium,
+            letterSpacing: letterSpacingSmall,
           ),
         ),
-        onPressed:
-            () =>
-                (!cinemaAndArea && fillterCinemas.isEmpty)
-                    ? {}
-                    : showCupertinoModalPopup(
-                      context: context,
-                      builder:
-                          (_) => Expanded(
-                            child: Align(
-                              alignment: Alignment.bottomCenter,
-                              child: SizedBox(
-                                height: 350,
-                                child: BackdropFilter(
-                                  filter: ImageFilter.blur(
-                                    sigmaX: 3,
-                                    sigmaY: 3,
-                                  ),
-                                  child: CupertinoPicker(
-                                    backgroundColor: Colors.transparent,
-                                    itemExtent: 40,
-                                    offAxisFraction: -0.8,
-                                    diameterRatio: 1,
-                                    squeeze: 1,
-                                    scrollController:
-                                        FixedExtentScrollController(
-                                          initialItem:
-                                              cinemaAndArea
-                                                  ? selectArea
-                                                  : selectCinema,
-                                        ),
-                                    onSelectedItemChanged:
-                                        (index) => handleFillterCinemas(
-                                          index,
-                                          cinemaAndArea,
-                                        ),
-                                    children: handleShowList(type),
-                                  ),
-                                ),
-                              ),
-                            ),
+        onPressed: () => (!cinemaAndArea && fillterCinemas.isEmpty)
+            ? {}
+            : showCupertinoModalPopup(
+                context: context,
+                builder: (_) => Expanded(
+                  child: Align(
+                    alignment: Alignment.bottomCenter,
+                    child: SizedBox(
+                      height: 350,
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 3, sigmaY: 3),
+                        child: CupertinoPicker(
+                          backgroundColor: Colors.transparent,
+                          itemExtent: 40,
+                          offAxisFraction: -0.8,
+                          diameterRatio: 1,
+                          squeeze: 1,
+                          scrollController: FixedExtentScrollController(
+                            initialItem: cinemaAndArea
+                                ? selectArea
+                                : selectCinema,
                           ),
+                          onSelectedItemChanged: (index) =>
+                              handleFillterCinemas(index, cinemaAndArea),
+                          children: handleShowList(type),
+                        ),
+                      ),
                     ),
+                  ),
+                ),
+              ),
       ),
     );
   }
 
   Widget buildMovieShow() {
-    var cinemasFiltered =
-        fillterCinemas.where((cinema) => cinema.name != "Tất cả rạp").toList();
+    var cinemasFiltered = fillterCinemas
+        .where((cinema) => cinema.name != "Tất cả rạp")
+        .toList();
     if (selectCinema != 0) {
-      cinemasFiltered =
-          cinemasFiltered
-              .where((c) => c.id == fillterCinemas[selectCinema].id)
-              .toList();
+      cinemasFiltered = cinemasFiltered
+          .where((c) => c.id == fillterCinemas[selectCinema].id)
+          .toList();
     }
 
     return Container(
@@ -241,7 +238,6 @@ class _DetailMovieScreenState extends State<DetailMovieScreen> {
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
-            spacing: spacing,
             children: [
               buildChooseCinemaArea("area"),
               Container(
@@ -258,33 +254,34 @@ class _DetailMovieScreenState extends State<DetailMovieScreen> {
           const Divider(thickness: 0.5, color: Colors.grey),
           cinemasFiltered.isNotEmpty
               ? Expanded(
-                child: ListView.builder(
-                  padding: const EdgeInsets.only(bottom: 10),
-                  itemCount: cinemasFiltered.length,
-                  itemBuilder: (context, index) {
-                    return buildItem(cinemasFiltered[index]);
-                  },
-                ),
-              )
+                  child: ListView.builder(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    itemCount: cinemasFiltered.length,
+                    itemBuilder: (context, index) {
+                      return buildItem(cinemasFiltered[index]);
+                    },
+                  ),
+                )
               : const Text(
-                "Không có rạp nào.",
-                style: TextStyle(
-                  color: colorTextApp,
-                  fontSize: textfontSizeApp,
+                  "Không có rạp nào.",
+                  style: TextStyle(
+                    color: colorTextApp,
+                    fontSize: textfontSizeApp,
+                    letterSpacing: letterSpacingSmall,
+                  ),
                 ),
-              ),
         ],
       ),
     );
   }
 
   Widget buildMovieInfo() {
-    style_({double? textSize, Color? color}) {
+    style_({Color? color}) {
       return TextStyle(
-        fontSize: textSize ?? textfontSizeNote,
-        fontFamily: "monospace",
-        fontWeight: FontWeight.bold,
+        fontSize: textfontSizeApp,
+        fontWeight: fontWeightMedium,
         color: color ?? Colors.white,
+        letterSpacing: letterSpacingSmall,
       );
     }
 
@@ -293,7 +290,7 @@ class _DetailMovieScreenState extends State<DetailMovieScreen> {
         bool videoIsValid = youtubePlayerController != null;
         return SingleChildScrollView(
           child: Column(
-            spacing: spacing,
+            spacing: spacingMedium,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (videoIsValid)
@@ -313,8 +310,8 @@ class _DetailMovieScreenState extends State<DetailMovieScreen> {
                 ),
               Padding(
                 padding: EdgeInsets.only(
-                  right: 8,
-                  left: 8,
+                  right: spacingMedium,
+                  left: spacingMedium,
                   top: videoIsValid ? 0 : 120,
                 ),
                 child: SizedBox(
@@ -329,10 +326,10 @@ class _DetailMovieScreenState extends State<DetailMovieScreen> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: spacing),
+                padding: const EdgeInsets.symmetric(horizontal: spacingMedium),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  spacing: spacing,
+                  spacing: spacingMedium,
                   children: [
                     SizedBox(
                       width: 130,
@@ -342,38 +339,42 @@ class _DetailMovieScreenState extends State<DetailMovieScreen> {
                         child: CachedNetworkImage(
                           imageUrl: widget.movie.urlImage!,
                           fit: BoxFit.fill,
-                          errorWidget:
-                              (context, url, error) => Center(
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    const Icon(
-                                      Icons.error_outline,
-                                      color: Colors.red,
-                                      size: 30,
-                                    ),
-                                    const SizedBox(height: 8),
-                                    const Text(
-                                      'Failed image',
-                                      style: TextStyle(
-                                        color: Colors.red,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                  ],
+                          errorWidget: (context, url, error) => Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(
+                                  Icons.error_outline,
+                                  color: Colors.red,
+                                  size: 30,
                                 ),
-                              ),
+                                const SizedBox(height: 8),
+                                const Text(
+                                  'Failed image',
+                                  style: TextStyle(
+                                    color: Colors.red,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
                       ),
                     ),
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        spacing: spacing,
+                        spacing: spacingMedium,
                         children: [
                           Text(
                             widget.movie.name ?? "",
-                            style: style_(textSize: textfontSizeApp),
+                            style: const TextStyle(
+                              fontSize: textfontSizeTitleAppBar,
+                              fontWeight: fontWeightSemiBold,
+                              color: Colors.white,
+                              letterSpacing: letterSpacingSmall,
+                            ),
                             overflow: TextOverflow.ellipsis,
                             maxLines: 2,
                           ),
@@ -388,7 +389,7 @@ class _DetailMovieScreenState extends State<DetailMovieScreen> {
                               Text("${widget.movie.rate}/10", style: style_()),
                               Container(
                                 margin: const EdgeInsets.symmetric(
-                                  horizontal: spacing,
+                                  horizontal: spacingMedium,
                                 ),
                                 height: 15,
                                 decoration: const BoxDecoration(
@@ -410,7 +411,7 @@ class _DetailMovieScreenState extends State<DetailMovieScreen> {
                             ],
                           ),
                           Row(
-                            spacing: spacing,
+                            spacing: spacingMedium,
                             children: [
                               const Icon(
                                 Icons.history_rounded,
@@ -420,7 +421,7 @@ class _DetailMovieScreenState extends State<DetailMovieScreen> {
                             ],
                           ),
                           Row(
-                            spacing: spacing,
+                            spacing: spacingMedium,
                             children: [
                               const Icon(
                                 Icons.calendar_month_outlined,
@@ -440,19 +441,32 @@ class _DetailMovieScreenState extends State<DetailMovieScreen> {
               ),
               Padding(
                 padding: const EdgeInsets.only(
-                  left: spacing,
-                  right: spacing,
-                  bottom: spacing,
+                  left: spacingMedium,
+                  right: spacingMedium,
+                  bottom: spacingMedium,
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  spacing: 3,
+                  spacing: spacingSmall,
                   children: [
                     Text(
                       "Nội dung:",
-                      style: style_(textSize: textfontSizeTitleAppBar),
+                      style: const TextStyle(
+                        fontSize: textfontSizeApp,
+                        fontWeight: fontWeightSemiBold,
+                        letterSpacing: letterSpacingSmall,
+                        color: colorTextApp,
+                      ),
                     ),
-                    Text("${widget.movie.description}", style: style_()),
+                    Text(
+                      "${widget.movie.description}",
+                      style: const TextStyle(
+                        fontSize: textfontSizeApp,
+                        fontWeight: fontWeightNormal,
+                        letterSpacing: letterSpacingSmall,
+                        color: colorTextApp,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -472,13 +486,14 @@ class _DetailMovieScreenState extends State<DetailMovieScreen> {
           color: colorTextApp,
         ),
         child: Padding(
-          padding: const EdgeInsets.all(8),
+          padding: const EdgeInsets.all(paddingInTextSmall),
           child: Text(
             time,
             style: const TextStyle(
-              fontWeight: FontWeight.bold,
+              fontWeight: fontWeightMedium,
               fontSize: textfontSizeNote,
-              fontFamily: fontApp,
+              letterSpacing: letterSpacingSmall,
+              color: Colors.black,
             ),
           ),
         ),
@@ -487,20 +502,16 @@ class _DetailMovieScreenState extends State<DetailMovieScreen> {
   }
 
   Widget buildItem(cinema) {
-    var iconArrowOpenShowTime =
-        showTimeCinema != cinema.id
-            ? Icons.keyboard_arrow_down_rounded
-            : Icons.keyboard_arrow_up_rounded;
+    var iconArrowOpenShowTime = showTimeCinema != cinema.id
+        ? Icons.keyboard_arrow_down_rounded
+        : Icons.keyboard_arrow_up_rounded;
 
-    final filteredRooms =
-        movieRoom
-            .where(
-              (mr) => mr.idRoom == cinema.id && mr.idMovie == widget.movie.id,
-            )
-            .toList();
+    final filteredRooms = movieRoom
+        .where((mr) => mr.idRoom == cinema.id && mr.idMovie == widget.movie.id)
+        .toList();
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 10),
+      margin: const EdgeInsets.only(bottom: spacingMedium),
 
       child: Column(
         children: [
@@ -515,7 +526,7 @@ class _DetailMovieScreenState extends State<DetailMovieScreen> {
               });
             },
             child: Padding(
-              padding: const EdgeInsets.all(15),
+              padding: const EdgeInsets.all(spacingMedium),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -527,6 +538,8 @@ class _DetailMovieScreenState extends State<DetailMovieScreen> {
                       style: const TextStyle(
                         color: colorTextApp,
                         fontSize: textfontSizeApp,
+                        letterSpacing: letterSpacingSmall,
+                        fontWeight: fontWeightNormal,
                       ),
                     ),
                   ),
@@ -542,32 +555,32 @@ class _DetailMovieScreenState extends State<DetailMovieScreen> {
           ),
           (showTimeCinema.isNotEmpty && showTimeCinema == cinema.id)
               ? filteredRooms.isEmpty
-                  ? const Text(
-                    "Không có lịch chiếu nào.",
-                    style: TextStyle(
-                      color: colorTextApp,
-                      fontWeight: FontWeight.w500,
-                      fontSize: textfontSizeNote,
-                    ),
-                  )
-                  : Padding(
-                    padding: const EdgeInsets.only(
-                      left: 15,
-                      right: 15,
-                      bottom: 15,
-                    ),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Wrap(
-                        alignment: WrapAlignment.start,
-                        spacing: spacing,
-                        children:
-                            filteredRooms
+                    ? const Text(
+                        "Không có lịch chiếu nào.",
+                        style: TextStyle(
+                          color: colorTextApp,
+                          fontWeight: fontWeightMedium,
+                          fontSize: textfontSizeApp,
+                          letterSpacing: letterSpacingSmall,
+                        ),
+                      )
+                    : Padding(
+                        padding: const EdgeInsets.only(
+                          left: spacingMedium,
+                          right: spacingMedium,
+                          bottom: spacingMedium,
+                        ),
+                        child: Align(
+                          alignment: Alignment.centerLeft,
+                          child: Wrap(
+                            alignment: WrapAlignment.start,
+                            spacing: spacingMedium,
+                            children: filteredRooms
                                 .map((mr_) => buildShowTimeMovie(mr_.time))
                                 .toList(),
-                      ),
-                    ),
-                  )
+                          ),
+                        ),
+                      )
               : const SizedBox.shrink(),
         ],
       ),
@@ -576,17 +589,18 @@ class _DetailMovieScreenState extends State<DetailMovieScreen> {
 
   PreferredSizeWidget buildAppBar() {
     return AppBar(
-      title:
-          currentSegment == 0
-              ? Text(
-                widget.movie.name!,
-                style: TextStyle(
-                  color: colorTextApp,
-                  fontSize: textfontSizeTitleAppBar,
-                ),
-              )
-              : null,
-
+      title: currentSegment == 0
+          ? Text(
+              widget.movie.name!,
+              style: TextStyle(
+                color: colorTextApp,
+                fontSize: textfontSizeTitleAppBar,
+                fontWeight: fontWeightTitleAppBar,
+                letterSpacing: letterSpacingSmall,
+              ),
+            )
+          : null,
+      titleSpacing: spacingMedium,
       backgroundColor: errorImage ? bgColorApp : Colors.transparent,
       iconTheme: const IconThemeData(color: colorTextApp),
     );
@@ -619,7 +633,7 @@ class _DetailMovieScreenState extends State<DetailMovieScreen> {
 
             Padding(
               padding: EdgeInsets.only(
-                top: currentSegment == 0 ? 140 : 0,
+                top: currentSegment == 0 ? 150 : 0,
                 right: currentSegment == 0 ? 15 : 0,
                 left: currentSegment == 0 ? 15 : 0,
               ),
@@ -632,7 +646,9 @@ class _DetailMovieScreenState extends State<DetailMovieScreen> {
                 left: 0,
                 right: 0,
                 child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: spacingMedium,
+                  ),
                   child: CupertinoSlidingSegmentedControl(
                     groupValue: currentSegment,
                     children: slidingSegments,
@@ -647,30 +663,4 @@ class _DetailMovieScreenState extends State<DetailMovieScreen> {
       ),
     );
   }
-}
-
-List<Widget> overlayLayers() {
-  return [
-    Positioned.fill(
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              Colors.black.withOpacity(0.35),
-              Colors.white.withOpacity(0.10),
-            ],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
-      ),
-    ),
-    Positioned.fill(
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-        child: SizedBox.shrink(),
-      ),
-    ),
-    Positioned.fill(child: Container(color: Colors.black.withOpacity(0.10))),
-  ];
 }

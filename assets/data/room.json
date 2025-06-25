@@ -1,0 +1,25 @@
+{
+  "data": [
+    {
+      "_id": "01",
+      "idCinema": "01",
+      "rowQuantity": 26,
+      "colQuantity": 30,
+      "roomNumber": "1"
+    },
+    {
+      "_id": "02",
+      "idCinema": "01",
+      "rowQuantity": 26,
+      "colQuantity": 30,
+      "roomNumber": "3"
+    },
+    {
+      "_id": "02",
+      "idCinema": "02",
+      "rowQuantity": 26,
+      "colQuantity": 30,
+      "roomNumber": "2"
+    }
+  ]
+}
