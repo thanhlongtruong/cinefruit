@@ -1,3 +1,5 @@
+import 'package:ceni_fruit/pages/order_food_drink.dart';
+import 'package:ceni_fruit/verify_email_page.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:intl/date_symbol_data_local.dart';
@@ -29,6 +31,9 @@ class MyApp extends StatelessWidget {
         statusBarIconBrightness: Brightness.light,
       ),
     );
-    return MaterialApp(debugShowCheckedModeBanner: false, home: SplashScreen());
+    return MaterialApp(
+      debugShowCheckedModeBanner: false,
+      home: VerifyEmailPage(),
+    );
   }
 }
