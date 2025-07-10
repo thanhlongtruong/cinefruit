@@ -1,14 +1,17 @@
 import 'package:ceni_fruit/config/background_app.dart';
 import 'package:ceni_fruit/config/const.dart';
+import 'package:ceni_fruit/config/show_snack_bar.dart';
+import 'package:ceni_fruit/config/catch_network_image.dart';
 import 'package:ceni_fruit/config/styles.dart';
 import 'package:ceni_fruit/config/widget_loading_error.dart';
-import 'package:ceni_fruit/provider/cinema.dart';
-import 'package:ceni_fruit/provider/movie.dart';
+import 'package:ceni_fruit/provider/cinema_provider.dart';
+import 'package:ceni_fruit/provider/movie_hot_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:ceni_fruit/detail_cinema_page.dart';
+import 'package:ceni_fruit/pages/detail_cinema_page.dart';
 import 'package:ceni_fruit/model/cinema.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:cached_network_image/cached_network_image.dart';
+import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 
 class CinemaPage extends ConsumerStatefulWidget {
   const CinemaPage({super.key});
@@ -30,11 +33,11 @@ class _CinemaPageState extends ConsumerState<CinemaPage> {
 
   PreferredSize buildSearch() {
     return PreferredSize(
-      preferredSize: const Size.fromHeight(70),
+      preferredSize: const Size.fromHeight(50),
       child: Container(
-        margin: const EdgeInsets.only(top: spacingBig),
+        margin: const EdgeInsets.only(top: spacingMedium),
         height: 50,
-        width: MediaQuery.of(context).size.width - 60,
+        padding: const EdgeInsets.symmetric(horizontal: spacingMedium),
         alignment: Alignment.center,
         child: TextField(
           style: const TextStyle(
@@ -76,46 +79,72 @@ class _CinemaPageState extends ConsumerState<CinemaPage> {
     );
   }
 
-  Widget titleSiliverAppBar = const Text(
-    "Danh sách rạp",
-    style: TextStyle(
-      color: colorTextApp,
-      fontSize: textfontSizeTitleAppBar,
-      letterSpacing: letterSpacingSmall,
-      fontWeight: fontWeightTitleAppBar,
-      shadows: [
-        Shadow(color: Colors.purple, blurRadius: 20, offset: Offset(0, 8)),
-      ],
-    ),
-  );
+  Widget titleSiliverAppBar = const Text("Danh sách rạp", style: tilteStyleApp);
 
   Widget buildItem(Cinema cinema) {
     return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => DetailCinemaPage(cinema: cinema)),
-        );
+      onTap: () async {
+        try {
+          final navigator = Navigator.of(context);
+          Get.dialog(
+            Center(child: circularProgress),
+            barrierDismissible: false,
+          );
+
+          final dateNow = DateTime.now();
+          final dateFormat = DateFormat("dd/MM/yyyy");
+
+          final params = DetailCinemaParams(
+            cinemaId: cinema.idCinema!,
+            date: dateFormat.format(dateNow).toString(),
+          );
+
+          await ref
+              .read(detailCinemaProvider(params).notifier)
+              .loadDetailCinema();
+
+          final state = ref.read(detailCinemaProvider(params));
+
+          if (Get.isDialogOpen == true) {
+            Get.back();
+          }
+          if (state.hasError) {
+            showSnackbar(
+              title: "Lỗi hệ thống",
+              message: "${state.error}",
+              type: "error",
+            );
+          } else {
+            navigator.push(
+              MaterialPageRoute(
+                builder: (_) => DetailCinemaPage(
+                  detailCinemaState: state.value ?? [],
+                  cinema: cinema,
+                ),
+              ),
+            );
+          }
+        } catch (error) {
+          if (Get.isDialogOpen == true) {
+            Get.back();
+          }
+          showSnackbar(title: "Lỗi hệ thống", message: "$error", type: "error");
+        }
       },
       child: Container(
-        margin: const EdgeInsets.only(bottom: spacingBig),
-        padding: const EdgeInsets.all(spacingSmall),
+        padding: const EdgeInsets.all(spacingMedium),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           spacing: spacingMedium,
           children: [
             ClipRRect(
-              borderRadius: borderRadiusButton,
-              child: CachedNetworkImage(
-                imageUrl: cinema.urlImage!,
-                width: 90,
-                height: 70,
-                memCacheWidth: 400,
-                memCacheHeight: 600,
-                fit: BoxFit.fill,
-                placeholder: (context, url) => Center(child: circularProgress),
-                errorWidget: (context, url, error) =>
-                    Center(child: Icon(Icons.broken_image_rounded)),
+              borderRadius: borderRadiusCardSmall,
+              child: cachedNetworkImageConfig(
+                cinema.urlImage!,
+                90,
+                70,
+                BoxFit.fill,
+                iconfontSizeNormal,
               ),
             ),
             Expanded(
@@ -139,7 +168,7 @@ class _CinemaPageState extends ConsumerState<CinemaPage> {
                     overflow: TextOverflow.fade,
                     style: const TextStyle(
                       fontSize: textfontSizeNote,
-                      fontWeight: fontWeightMedium,
+                      fontWeight: fontWeightNormal,
                       letterSpacing: letterSpacingSmall,
                       color: colorTextApp,
                     ),
@@ -156,23 +185,28 @@ class _CinemaPageState extends ConsumerState<CinemaPage> {
   @override
   Widget build(BuildContext context) {
     final cinemasAsync = ref.watch(cinemaProvider);
-    final bgApp = ref.read(backgroundAppProvider.notifier).state;
+    final bgApp = ref.read(backgroundMovieHot.notifier).state;
     return cinemasAsync.when(
       loading: () => buildLoadingScreen(),
-      error: (error, stackTrace) => buildErrorScreen(error),
+      error: (error, stackTrace) => buildErrorScreen(
+        error,
+        stackTrace,
+        () => ref.read(cinemaProvider.notifier).refreshCinema(),
+      ),
       data: (cinemas) {
         allCinemas = cinemas;
         if (inputSearch.text.isEmpty) {
           cinemasSearch = List.from(cinemas);
         }
         return Scaffold(
-          extendBodyBehindAppBar: true,
           resizeToAvoidBottomInset: false,
+          backgroundColor: Colors.transparent,
           body: RefreshIndicator(
             onRefresh: () async {
               return ref.read(cinemaProvider.notifier).refreshCinema();
             },
             child: Stack(
+              fit: StackFit.expand,
               children: [
                 if (bgApp.isNotEmpty) ...backgroundApp(bgApp),
                 CustomScrollView(
@@ -202,6 +236,8 @@ class _CinemaPageState extends ConsumerState<CinemaPage> {
                                 style: TextStyle(
                                   color: colorTextApp,
                                   fontSize: textfontSizeApp,
+                                  letterSpacing: letterSpacingSmall,
+                                  fontWeight: fontWeightNormal,
                                 ),
                               ),
                             ),

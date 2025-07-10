@@ -1,16 +1,16 @@
   class Movie {
-  String? id;
+  String? idMovie;
   String? name;
   String? urlImage;
   String? description;
   String? video;
   String? releaseDate;
   double? rate;
-  double? price;
+  String? price;
   String? duration;
 
   Movie({
-    required this.id,
+    required this.idMovie,
     required this.name,
     required this.urlImage,
     required this.description,
@@ -22,7 +22,7 @@
   });
 
   Movie.fromJson(Map<String, dynamic> json) {
-    id = json["_id"];
+    idMovie = json["_id"];
     name = json["name"];
     urlImage = json["urlImage"];
     description = json["description"];

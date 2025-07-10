@@ -1,14 +1,14 @@
 class Cinema {
-  String? id;
+  String? idCinema;
   String? name;
   String? address;
   String? urlImage;
   String? area;
 
-  Cinema({this.id, this.name, this.address, this.urlImage, this.area});
+  Cinema({this.idCinema, this.name, this.address, this.urlImage, this.area});
 
   Cinema.fromJson(Map<String, dynamic> json) {
-    id = json["_id"];
+    idCinema = json["_id"];
     name = json["name"];
     address = json["address"];
     urlImage = json["urlImage"];

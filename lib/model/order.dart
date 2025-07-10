@@ -1,46 +1,63 @@
+import 'package:ceni_fruit/model/movie_room.dart';
+
 class Order {
-  String? id;
-  String? idMovieRoom;
+  String? idOrder;
+  dynamic idMovieRoom;
   String? idUser;
-  List<String>? idFoodDrink;
+  List<Map<String, dynamic>>? foodDrinks;
   String? time;
+  String? date;
   double? price;
   String? paymentStatus;
   String? paymentMethod;
-  // discount dua vao price
-  int? discountCoin;
-  // ap dung thuong xu khi thanh  toan thanh cong,chi tinh cho price
-  int? rewardCoin;
   String? createdAt;
   String? expiredAt;
 
   Order({
-    required this.id,
+    required this.idOrder,
     required this.idMovieRoom,
     required this.idUser,
-    this.idFoodDrink,
+    this.foodDrinks,
     required this.time,
+    required this.date,
     required this.price,
     required this.paymentStatus,
     required this.paymentMethod,
-    required this.discountCoin,
-    required this.rewardCoin,
     required this.createdAt,
     required this.expiredAt,
   });
 
   Order.fromJson(Map<String, dynamic> json) {
-    id = json["_id"];
+    idOrder = json["_id"];
+
     idMovieRoom = json["idMovieRoom"];
+    
+    if (json["idMovieRoom"] is String) {
+      idMovieRoom = json["idMovieRoom"];
+    } else if (json["idMovieRoom"] is Map) {
+      idMovieRoom = MovieRoom.fromJson(json["idMovieRoom"]);
+    }
+
     idUser = json["idUser"];
-    idFoodDrink = json["idFoodDrink"];
+
+    foodDrinks = (json["foodDrinks"] as List<dynamic>)
+        .map((fd) => fd as Map<String, dynamic>)
+        .toList();
+
     time = json["time"];
-    price = json["price"];
+
+    if (json["price"] is double) {
+      price = json["price"];
+    } else if (json["price"] is String) {
+      price = double.parse(json["price"]);
+    }
+
     paymentStatus = json["paymentStatus"];
+
     paymentMethod = json["paymentMethod"];
-    discountCoin = json["discountCoin"];
-    rewardCoin = json["rewardCoin"];
+
     createdAt = json["createdAt"];
+
     expiredAt = json["expiredAt"];
   }
 
@@ -48,13 +65,11 @@ class Order {
     final Map<String, dynamic> data = <String, dynamic>{};
     data["idMovieRoom"] = idMovieRoom;
     data["idUser"] = idUser;
-    data["idFoodDrink"] = idFoodDrink;
+    data["idFoodDrinkAndCount"] = foodDrinks;
     data["time"] = time;
     data["price"] = price;
     data["paymentStatus"] = paymentStatus;
     data["paymentMethod"] = paymentMethod;
-    data["discountCoin"] = discountCoin;
-    data["rewardCoin"] = rewardCoin;
     data["createdAt"] = createdAt;
     data["expiredAt"] = expiredAt;
     return data;

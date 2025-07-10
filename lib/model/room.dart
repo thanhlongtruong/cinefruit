@@ -1,12 +1,14 @@
+import 'package:ceni_fruit/model/cinema.dart';
+
 class Room {
-  String? id;
-  String? idCinema;
+  String? idRoom;
+  dynamic idCinema;
   int? rowQuantity;
   int? colQuantity;
   String? roomNumber;
 
   Room({
-    required this.id,
+    required this.idRoom,
     required this.idCinema,
     required this.rowQuantity,
     required this.colQuantity,
@@ -14,8 +16,13 @@ class Room {
   });
 
   Room.fromJson(Map<String, dynamic> json) {
-    id = json["_id"];
+    idRoom = json["_id"];
     idCinema = json["idCinema"];
+    if (json["idCinema"] is String) {
+      idCinema = json["idCinema"];
+    } else if (json["idCinema"] is Map) {
+      idCinema = Cinema.fromJson(json["idCinema"]);
+    }
     rowQuantity = json["rowQuantity"];
     colQuantity = json["colQuantity"];
     roomNumber = json["roomNumber"];

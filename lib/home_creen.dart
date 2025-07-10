@@ -1,19 +1,26 @@
+import 'package:ceni_fruit/config/styles.dart';
 import 'package:ceni_fruit/pages/booked_ticket_page.dart';
 import 'package:ceni_fruit/pages/home_page.dart';
 import 'package:ceni_fruit/pages/cinema_page.dart';
 import 'package:ceni_fruit/pages/user_page.dart';
 import 'package:flutter/material.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 class HomeCreen extends StatefulWidget {
-  const HomeCreen({super.key});
+  final int index;
+  const HomeCreen({super.key, this.index = 0});
 
   @override
   State<HomeCreen> createState() => _HomeCreenState();
 }
 
 class _HomeCreenState extends State<HomeCreen> {
-  int index = 0;
+  late int index;
+
+  @override
+  void initState() {
+    super.initState();
+    index = widget.index;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -22,19 +29,19 @@ class _HomeCreenState extends State<HomeCreen> {
     final items = <BottomNavigationBarItem>[
       BottomNavigationBarItem(
         icon: Icon(Icons.home_rounded, size: 25),
-        label: "Trang chủ",
+        label: "Phim",
       ),
       BottomNavigationBarItem(
         icon: Icon(Icons.theaters_rounded, size: 25),
         label: "Rạp",
       ),
       BottomNavigationBarItem(
-        icon: Icon(FontAwesomeIcons.ticket, size: 25),
-        label: "Vé",
+        icon: Icon(Icons.history_rounded, size: 25),
+        label: "Lịch sử",
       ),
       BottomNavigationBarItem(
-        icon: Icon(FontAwesomeIcons.user, size: 25),
-        label: "Tôi",
+        icon: Icon(Icons.person_rounded, size: 25),
+        label: "Tài khoản",
       ),
     ];
 
@@ -42,7 +49,6 @@ class _HomeCreenState extends State<HomeCreen> {
       extendBody: true,
       bottomNavigationBar: Container(
         margin: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-
         child: ClipRRect(
           borderRadius: BorderRadius.circular(15),
           child: Theme(
@@ -57,9 +63,14 @@ class _HomeCreenState extends State<HomeCreen> {
               items: items,
               currentIndex: index,
               type: BottomNavigationBarType.fixed,
-              showSelectedLabels: false,
               showUnselectedLabels: false,
               onTap: (i) => setState(() => index = i),
+              selectedLabelStyle: TextStyle(
+                color: colorTextApp,
+                letterSpacing: letterSpacingSmall,
+                fontWeight: fontWeightNormal,
+                fontSize: textfontSizeNote,
+              ),
             ),
           ),
         ),

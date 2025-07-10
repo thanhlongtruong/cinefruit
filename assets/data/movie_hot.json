@@ -8,7 +8,7 @@
       "video": "https://youtu.be/1x--MaHsbEc?si=hJFvXDyihQwY-jqG",
       "releaseDate": "06/10/2025",
       "rate": 8.4,
-      "price": 3.99,
+      "price": "3.99",
       "duration": "1h 40m"
     },
 
@@ -20,7 +20,7 @@
       "video": "",
       "releaseDate": "2024-02-22",
       "rate": 7.9,
-      "price": 4.49,
+      "price": "4.49",
       "duration": "122"
     }
   ]

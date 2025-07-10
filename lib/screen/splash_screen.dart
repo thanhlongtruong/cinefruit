@@ -1,12 +1,15 @@
 import "dart:async";
+import "package:ceni_fruit/config/show_snack_bar.dart";
 import "package:ceni_fruit/config/widget_loading_error.dart";
+import "package:ceni_fruit/provider/movie_hot_provider.dart";
+import "package:ceni_fruit/provider/movie_provider.dart";
+import "package:ceni_fruit/provider/payment_method_provider.dart";
 import 'package:flutter/services.dart';
+import 'package:get/get.dart';
 
 import "package:ceni_fruit/config/const.dart";
 import "package:ceni_fruit/home_creen.dart";
-import "package:ceni_fruit/provider/cinema.dart";
-import "package:ceni_fruit/provider/movie.dart";
-import "package:ceni_fruit/provider/user.dart";
+import "package:ceni_fruit/provider/cinema_provider.dart";
 import "package:flutter/material.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import '../config/path_images.dart';
@@ -20,54 +23,53 @@ class SplashScreen extends ConsumerStatefulWidget {
 }
 
 class _SplashScreenState extends ConsumerState<SplashScreen> {
-  bool isLoading = false;
-  bool hasError = true;
-  dynamic _error = null;
-
   @override
   void initState() {
     super.initState();
-    preloadProvider();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      preloadProvider();
+    });
   }
 
   Future<void> preloadProvider() async {
     try {
-      setState(() {
-        isLoading = true;
-        _error = null;
-      });
+      Get.dialog(Center(child: circularProgress), barrierDismissible: false);
 
       final movieHotNotifier = ref.read(movieHotProvider.notifier);
       final movieNotifier = ref.read(movieProvider.notifier);
       final cinemaNotifier = ref.read(cinemaProvider.notifier);
-      final userNotifier = ref.read(userProvider.notifier);
-      ref.read(backgroundAppProvider);
+      final paymentMethodNotifier = ref.read(
+        paymentMethodNotifierProvider.notifier,
+      );
+      ref.read(backgroundMovieHot);
 
       final futures = [
         movieHotNotifier.loadMoviesHot(),
         movieNotifier.loadMovies(),
-        cinemaNotifier.loadCinemsFromJson(),
-        userNotifier.loadUser(),
+        cinemaNotifier.loadCinemas(),
+        paymentMethodNotifier.loadPaymentMethod(),
       ];
 
       await Future.wait(futures);
-      await Future.delayed(const Duration(seconds: 2));
 
-      setState(() => isLoading = false);
-
-      if (mounted) {
-        Navigator.pushAndRemoveUntil(
-          context,
-          MaterialPageRoute(builder: (_) => HomeCreen()),
-          (route) => false,
-        );
+      if (Get.isDialogOpen == true) {
+        Get.back();
       }
-    } catch (error, stack) {
-      logger.d("error:$error, stack: $stack");
-      setState(() {
-        isLoading = false;
-        _error = error;
+      Future.delayed(const Duration(milliseconds: 500), () {
+        if (mounted) {
+          Navigator.pushAndRemoveUntil(
+            context,
+            MaterialPageRoute(builder: (_) => const HomeCreen()),
+            (route) => false,
+          );
+        }
       });
+    } catch (error, stackTrace) {
+      if (Get.isDialogOpen == true) {
+        Get.back();
+      }
+      buildErrorScreen(error, stackTrace);
+      return;
     }
   }
 
@@ -88,10 +90,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
           children: [
             Hero(tag: "logo", child: Image.asset(cinefruit)),
             const SizedBox(height: spacingBig),
-            if (isLoading)
-              circularProgress
-            else if (_error != null)
-              buildErrorScreen(_error),
           ],
         ),
       ),

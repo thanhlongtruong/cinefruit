@@ -1,17 +1,20 @@
-import 'dart:io';
 import 'dart:ui';
+import 'package:ceni_fruit/config/const.dart';
+import 'package:ceni_fruit/config/show_snack_bar.dart';
+import 'package:ceni_fruit/provider/movie_room_provider.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import 'package:cached_network_image/cached_network_image.dart';
-import 'package:ceni_fruit/config/const.dart';
 import 'package:ceni_fruit/config/styles.dart';
 import 'package:ceni_fruit/config/widget_loading_error.dart';
-import 'package:ceni_fruit/detail_movie_screen.dart';
+import 'package:ceni_fruit/config/catch_network_image.dart';
+import 'package:ceni_fruit/pages/detail_movie_page.dart';
 import 'package:ceni_fruit/model/movie.dart';
 import 'package:ceni_fruit/pages/movie_page.dart';
-import 'package:ceni_fruit/provider/movie.dart';
+import 'package:ceni_fruit/provider/movie_hot_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -39,6 +42,31 @@ class _HomePageState extends ConsumerState<HomePage> {
   void dispose() {
     _pageController.dispose();
     super.dispose();
+  }
+
+  Widget boxShowInfoMovie() {
+    return Positioned(
+      top: MediaQuery.of(context).size.height * 0.05,
+      child: ClipRRect(
+        borderRadius: borderRadiusCardSmall,
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+          child: Container(
+            color: Colors.transparent,
+            padding: const EdgeInsets.all(spacingMedium),
+            width: MediaQuery.of(context).size.width - 60,
+            child: Column(
+              spacing: spacingMedium,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text("Phim nổi bật", style: tilteStyleApp),
+                if (movieSelect != null) showInfoMovie(),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
   }
 
   Widget showInfoMovie() {
@@ -78,11 +106,61 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   Widget buildCard(Movie movie) {
     return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => DetailMovieScreen(movie: movie)),
-        );
+      onTap: () async {
+        try {
+          final navigator = Navigator.of(context);
+
+          Get.dialog(
+            Center(child: circularProgress),
+            barrierDismissible: false,
+          );
+
+          final dateNow = DateTime.now();
+          final dateFormat = DateFormat("dd/MM/yyyy");
+
+          final params = GetMovieParams(
+            idMovie: movie.idMovie!,
+            date: dateFormat.format(dateNow).toString(),
+          );
+
+          await ref
+              .read(movieRoomProvider(params).notifier)
+              .loadMovieRoomIdMovie();
+
+          final state = ref.read(movieRoomProvider(params));
+
+          if (Get.isDialogOpen == true) {
+            Get.back();
+          }
+
+          if (state.hasError) {
+            showSnackbar(
+              title: "Lỗi hệ thống",
+              message: "${state.error}",
+              type: "error",
+            );
+          } else {
+            navigator.push(
+              MaterialPageRoute(
+                builder: (_) => DetailMovieScreen(
+                  movie: movie,
+                  cinemas: state.value!.cinemas,
+                  movieRooms: state.value!.movieRooms,
+                  rooms: state.value!.rooms,
+                ),
+              ),
+            );
+          }
+        } catch (error) {
+          if (Get.isDialogOpen == true) {
+            Get.back();
+          }
+          showSnackbar(
+            title: "Lỗi hệ thống",
+            message: "$error",
+            type: "error",
+          );
+        }
       },
       child: Container(
         decoration: const BoxDecoration(
@@ -101,33 +179,13 @@ class _HomePageState extends ConsumerState<HomePage> {
         width: 266.66,
         child: ClipRRect(
           borderRadius: borderRadiusCardBig,
-          child: buildNetworkImage(movie.urlImage!),
-        ),
-      ),
-    );
-  }
-
-  Widget buildNetworkImage(String urlImage) {
-    return CachedNetworkImage(
-      imageUrl: urlImage,
-      width: double.infinity,
-      height: double.infinity,
-      fit: BoxFit.cover,
-      memCacheWidth: 400,
-      memCacheHeight: 600,
-      fadeInDuration: Duration(milliseconds: 50),
-      placeholder: (context, url) => Center(child: circularProgress),
-      errorWidget: (context, url, error) => Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          spacing: spacingMedium,
-          children: [
-            const Icon(Icons.broken_image, size: 60, color: colorTextApp),
-            const Text(
-              "Không thể truy cập ảnh",
-              style: TextStyle(color: colorTextApp, fontSize: textfontSizeNote),
-            ),
-          ],
+          child: cachedNetworkImageConfig(
+            movie.urlImage!,
+            double.infinity,
+            double.infinity,
+            BoxFit.cover,
+            iconfontSizeCardMedium,
+          ),
         ),
       ),
     );
@@ -153,13 +211,13 @@ class _HomePageState extends ConsumerState<HomePage> {
       child: IntrinsicWidth(
         child: Container(
           decoration: const BoxDecoration(
-            color: Colors.deepOrange,
+            color: colorButton,
             borderRadius: borderRadiusButton,
           ),
           margin: const EdgeInsets.symmetric(vertical: 90, horizontal: 20),
           child: Padding(
             padding: const EdgeInsets.all(9),
-            child: Icon(icon, size: iconfontSizeApp, color: colorTextApp),
+            child: Icon(icon, size: iconfontSizeNormal, color: colorTextApp),
           ),
         ),
       ),
@@ -168,7 +226,7 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final moviesAsync = ref.watch(movieHotProvider);
+    final movieHotAsync = ref.watch(movieHotProvider);
 
     final screenHeight = MediaQuery.of(context).size.height;
 
@@ -178,15 +236,19 @@ class _HomePageState extends ConsumerState<HomePage> {
         statusBarIconBrightness: Brightness.light,
         systemNavigationBarColor: Colors.transparent,
       ),
-      child: moviesAsync.when(
+
+      child: movieHotAsync.when(
         loading: () => buildLoadingScreen(),
-        error: (error, stack) => buildErrorScreen(error),
+        error: (error, stack) => buildErrorScreen(
+          error,
+          stack,
+          () => ref.read(movieHotProvider.notifier).refreshMovieHot(),
+        ),
         data: (movies) {
           if (movieSelect == null && movies.isNotEmpty) {
             movieSelect = movies[0];
             imageBackground = movies[0].urlImage!;
           }
-
           return Scaffold(
             floatingActionButton: buildFloatingActionButton(),
             body: PageView(
@@ -196,7 +258,9 @@ class _HomePageState extends ConsumerState<HomePage> {
               children: [
                 RefreshIndicator(
                   onRefresh: () async {
-                    return ref.read(movieProvider.notifier).refresh();
+                    return ref
+                        .read(movieHotProvider.notifier)
+                        .refreshMovieHot();
                   },
                   child: Container(
                     color: bgColorApp,
@@ -205,16 +269,17 @@ class _HomePageState extends ConsumerState<HomePage> {
                       child: Stack(
                         children: [
                           Positioned.fill(
-                            child: CachedNetworkImage(
-                              imageUrl: imageBackground,
-                              fit: BoxFit.fill,
-                              errorWidget: (context, url, error) =>
-                                  const Center(child: Icon(Icons.broken_image)),
+                            child: cachedNetworkImageConfig(
+                              imageBackground,
+                              double.infinity,
+                              double.infinity,
+                              BoxFit.cover,
+                              iconfontSizeCardBig,
                             ),
                           ),
                           Positioned.fill(
                             child: Container(
-                              color: bgColorApp.withOpacity(0.65),
+                              color: bgColorApp.withOpacity(0.60),
                             ),
                           ),
                           ListWheelScrollView.useDelegate(
@@ -236,45 +301,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                               });
                             },
                           ),
-                          Positioned(
-                            top: MediaQuery.of(context).size.height * 0.08,
-                            child: ClipRRect(
-                              borderRadius: borderRadiusCardSmall,
-                              child: BackdropFilter(
-                                filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-                                child: Container(
-                                  color: Colors.transparent,
-
-                                  padding: const EdgeInsets.all(14),
-                                  width: MediaQuery.of(context).size.width - 60,
-                                  child: Column(
-                                    spacing: spacingMedium,
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        "Phim nổi bật",
-                                        style: TextStyle(
-                                          color: colorTextApp,
-                                          fontSize: textfontSizeTitleAppBar,
-                                          letterSpacing: letterSpacingSmall,
-                                          fontWeight: fontWeightTitleAppBar,
-                                          shadows: [
-                                            const Shadow(
-                                              color: Colors.purple,
-                                              blurRadius: 20,
-                                              offset: Offset(0, 8),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      if (movieSelect != null) showInfoMovie(),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
+                          boxShowInfoMovie(),
                         ],
                       ),
                     ),

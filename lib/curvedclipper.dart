@@ -12,7 +12,7 @@ class CurvedShadowPainter extends CustomPainter {
     path.quadraticBezierTo(w / 2, 0, w, h * 0.8);
 
     // Vẽ bóng đổ
-    canvas.drawShadow(path, Colors.amberAccent.withOpacity(0.4), 6, false);
+    canvas.drawShadow(path, Colors.amberAccent.withOpacity(0.3), 5, false);
 
     // Vẽ stroke vàng
     final paint = Paint()

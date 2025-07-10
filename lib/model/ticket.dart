@@ -1,18 +1,18 @@
 class Ticket {
-  String? id;
+  String? idTicket;
   String? idOrder;
   String? seatNumber;
   String? paymentStatus;
 
   Ticket({
-    required this.id,
+    required this.idTicket,
     required this.idOrder,
     required this.seatNumber,
     required this.paymentStatus,
   });
 
   Ticket.fromJson(Map<String, dynamic> json) {
-    id = json["_id"];
+    idTicket = json["_id"];
     idOrder = json["idOrder"];
     seatNumber = json["seatNumber"];
     paymentStatus = json["paymentStatus"];

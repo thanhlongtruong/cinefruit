@@ -1,12 +1,17 @@
+import 'package:ceni_fruit/config/show_snack_bar.dart';
+import 'package:ceni_fruit/provider/movie_room_provider.dart';
+import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:ceni_fruit/config/const.dart';
 import 'package:ceni_fruit/config/widget_loading_error.dart';
+import 'package:ceni_fruit/config/catch_network_image.dart';
 import 'package:ceni_fruit/config/background_app.dart';
-import 'package:ceni_fruit/detail_movie_screen.dart';
+import 'package:ceni_fruit/pages/detail_movie_page.dart';
 import 'package:ceni_fruit/model/movie.dart';
-import 'package:ceni_fruit/provider/movie.dart';
+import 'package:ceni_fruit/provider/movie_hot_provider.dart';
+import 'package:ceni_fruit/provider/movie_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:ceni_fruit/config/styles.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class MoviePage extends ConsumerStatefulWidget {
@@ -33,14 +38,58 @@ class _MoviePageState extends ConsumerState<MoviePage> {
         movie.urlImage!.isNotEmpty &&
         !errorIndexes.contains(index);
     return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => DetailMovieScreen(movie: movie)),
-        );
+      onTap: () async {
+        try {
+          final navigator = Navigator.of(context);
+
+          Get.dialog(
+            Center(child: circularProgress),
+            barrierDismissible: false,
+          );
+
+          final dateNow = DateTime.now();
+          final dateFormat = DateFormat("dd/MM/yyyy");
+
+          final params = GetMovieParams(
+            idMovie: movie.idMovie!,
+            date: dateFormat.format(dateNow).toString(),
+          );
+
+          await ref
+              .read(movieRoomProvider(params).notifier)
+              .loadMovieRoomIdMovie();
+
+          final state = ref.read(movieRoomProvider(params));
+
+          if (Get.isDialogOpen == true) {
+            Get.back();
+          }
+          if (state.hasError) {
+            showSnackbar(
+              title: "Lỗi hệ thống",
+              message: "${state.error}",
+              type: "error",
+            );
+          } else {
+            navigator.push(
+              MaterialPageRoute(
+                builder: (_) => DetailMovieScreen(
+                  movie: movie,
+                  cinemas: state.value!.cinemas,
+                  movieRooms: state.value!.movieRooms,
+                  rooms: state.value!.rooms,
+                ),
+              ),
+            );
+          }
+        } catch (error) {
+          if (Get.isDialogOpen == true) {
+            Get.back();
+          }
+          showSnackbar(title: "Lỗi hệ thống", message: "$error", type: "error");
+        }
       },
       child: Container(
-        margin: const EdgeInsets.all(9),
         alignment: Alignment.center,
         decoration: errorImage
             ? const BoxDecoration(
@@ -55,24 +104,12 @@ class _MoviePageState extends ConsumerState<MoviePage> {
             : null,
         child: ClipRRect(
           borderRadius: borderRadiusCardSmall,
-          child: CachedNetworkImage(
-            imageUrl: movie.urlImage!,
-            width: double.infinity,
-            height: double.infinity,
-            fit: BoxFit.cover,
-            placeholder: (context, url) => Center(child: circularProgress),
-            errorWidget: (context, url, error) {
-              WidgetsBinding.instance.addPostFrameCallback((_) {
-                if (mounted) {
-                  setState(() {
-                    errorIndexes.add(index);
-                  });
-                }
-              });
-              return Center(
-                child: Icon(Icons.broken_image, size: 60, color: colorTextApp),
-              );
-            },
+          child: cachedNetworkImageConfig(
+            movie.urlImage!,
+            double.infinity,
+            double.infinity,
+            BoxFit.cover,
+            iconfontSizeCardMedium,
           ),
         ),
       ),
@@ -81,14 +118,14 @@ class _MoviePageState extends ConsumerState<MoviePage> {
 
   PreferredSize buildSearch() {
     return PreferredSize(
-      preferredSize: const Size.fromHeight(70),
+      preferredSize: const Size.fromHeight(50),
       child: Container(
-        margin: const EdgeInsets.only(top: spacingBig),
+        margin: const EdgeInsets.only(top: spacingMedium),
         height: 50,
-        width: MediaQuery.of(context).size.width - 60,
+        padding: const EdgeInsets.symmetric(horizontal: spacingMedium),
         alignment: Alignment.center,
         child: TextField(
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: textfontSizeApp,
             fontWeight: fontWeightMedium,
             letterSpacing: letterSpacingSmall,
@@ -131,10 +168,14 @@ class _MoviePageState extends ConsumerState<MoviePage> {
   @override
   Widget build(BuildContext context) {
     final moviesAsync = ref.watch(movieProvider);
-    final backgroundImage = ref.read(backgroundAppProvider);
+    final backgroundImage = ref.read(backgroundMovieHot);
     return moviesAsync.when(
       loading: () => buildLoadingScreen(),
-      error: (error, stackTrace) => buildErrorScreen(error),
+      error: (error, stackTrace) => buildErrorScreen(
+        error,
+        stackTrace,
+        () => ref.read(movieProvider.notifier).refreshMovie(),
+      ),
       data: (movies) {
         allMovies = movies;
         if (inputSearch.text.isEmpty) {
@@ -142,10 +183,9 @@ class _MoviePageState extends ConsumerState<MoviePage> {
         }
         return Scaffold(
           resizeToAvoidBottomInset: false,
-          backgroundColor: bgColorApp,
           body: RefreshIndicator(
             onRefresh: () async {
-              return ref.read(movieProvider.notifier).refresh();
+              return ref.read(movieProvider.notifier).refreshMovie();
             },
             child: Stack(
               children: [
@@ -155,22 +195,7 @@ class _MoviePageState extends ConsumerState<MoviePage> {
                   slivers: [
                     SliverAppBar(
                       floating: true,
-                      title: Text(
-                        "Danh sách phim",
-                        style: TextStyle(
-                          color: colorTextApp,
-                          fontSize: textfontSizeTitleAppBar,
-                          letterSpacing: letterSpacingSmall,
-                          fontWeight: fontWeightTitleAppBar,
-                          shadows: [
-                            const Shadow(
-                              color: Colors.purple,
-                              blurRadius: 20,
-                              offset: Offset(0, 8),
-                            ),
-                          ],
-                        ),
-                      ),
+                      title: const Text("Danh sách phim", style: tilteStyleApp),
                       backgroundColor: Colors.transparent,
                       elevation: 0,
                       bottom: buildSearch(),
@@ -178,13 +203,14 @@ class _MoviePageState extends ConsumerState<MoviePage> {
 
                     moviesSearch.isNotEmpty
                         ? SliverPadding(
-                            padding: const EdgeInsets.only(top: spacingMedium),
+                            padding: const EdgeInsets.all(spacingMedium),
                             sliver: SliverGrid(
                               gridDelegate:
                                   const SliverGridDelegateWithFixedCrossAxisCount(
                                     crossAxisCount: 2,
-                                    crossAxisSpacing: 1,
                                     childAspectRatio: 0.69,
+                                    crossAxisSpacing: spacingMedium,
+                                    mainAxisSpacing: spacingMedium,
                                   ),
                               delegate: SliverChildBuilderDelegate(
                                 (context, index) =>
@@ -202,6 +228,8 @@ class _MoviePageState extends ConsumerState<MoviePage> {
                                 style: TextStyle(
                                   color: colorTextApp,
                                   fontSize: textfontSizeApp,
+                                  letterSpacing: letterSpacingSmall,
+                                  fontWeight: fontWeightMedium,
                                 ),
                               ),
                             ),

@@ -1,22 +1,31 @@
+import 'package:ceni_fruit/config/background_app.dart';
+import 'package:ceni_fruit/config/const.dart';
+import 'package:ceni_fruit/config/show_snack_bar.dart';
+import 'package:ceni_fruit/config/style_login_register.dart';
 import 'package:ceni_fruit/config/styles.dart';
 import 'package:ceni_fruit/model/user.dart';
+import 'package:ceni_fruit/provider/movie_hot_provider.dart';
+import 'package:ceni_fruit/provider/user_handle_provider.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get/get.dart';
 
-class InfoAccountPage extends StatefulWidget {
-  const InfoAccountPage({super.key});
+class InfoAccountPage extends ConsumerStatefulWidget {
+  final User? user;
+  const InfoAccountPage({super.key, required this.user});
 
   @override
-  State<InfoAccountPage> createState() => _InfoAccountPageState();
+  ConsumerState<InfoAccountPage> createState() => _InfoAccountPageState();
 }
 
-class _InfoAccountPageState extends State<InfoAccountPage> {
-  // User? currentUser = User.instance;
-
+class _InfoAccountPageState extends ConsumerState<InfoAccountPage> {
   @override
   void initState() {
     super.initState();
-    // nameController.text = User.instance?.name ?? "";
-    // emailController.text = User.instance?.email ?? "";
+    nameController.text = widget.user?.name ?? "";
+    emailController.text = widget.user?.email ?? "";
+    birthdayController.text = widget.user?.birthday ?? "";
     nameController.addListener(_onTextChanged);
     emailController.addListener(_onTextChanged);
   }
@@ -39,66 +48,11 @@ class _InfoAccountPageState extends State<InfoAccountPage> {
 
   var nameController = TextEditingController();
   var emailController = TextEditingController();
+  var birthdayController = TextEditingController();
   var currentPasswordController = TextEditingController();
   var newPasswordController = TextEditingController();
   var confirmNewPasswordController = TextEditingController();
   bool updatePassword = false;
-
-  Widget buildName() {
-    return Container(
-      height: 50,
-      decoration: BoxDecoration(
-        borderRadius: borderRadiusCardSmall,
-        color: colorTextApp,
-        boxShadow: [
-          BoxShadow(offset: Offset(3, 3), blurRadius: 6, color: shadowColorBox),
-        ],
-      ),
-      child: TextFormField(
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return "Enter your name";
-          }
-          return null;
-        },
-        controller: nameController,
-        decoration: InputDecoration(
-          border: InputBorder.none,
-          contentPadding: EdgeInsets.only(top: 14),
-          prefixIcon: Icon(Icons.person),
-          hintText: "Enter your name",
-        ),
-      ),
-    );
-  }
-
-  Widget buildEmail() {
-    return Container(
-      height: 50,
-      decoration: BoxDecoration(
-        borderRadius: borderRadiusCardSmall,
-        color: colorTextApp,
-        boxShadow: [
-          BoxShadow(offset: Offset(3, 3), blurRadius: 6, color: shadowColorBox),
-        ],
-      ),
-      child: TextFormField(
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return "Enter your email";
-          }
-          return null;
-        },
-        controller: emailController,
-        decoration: InputDecoration(
-          border: InputBorder.none,
-          hintText: "Enter your email",
-          prefixIcon: Icon(Icons.email_outlined),
-          contentPadding: EdgeInsets.only(top: 14),
-        ),
-      ),
-    );
-  }
 
   Widget buildOldPassword() {
     return Container(
@@ -185,43 +139,88 @@ class _InfoAccountPageState extends State<InfoAccountPage> {
   }
 
   Widget buildButtonUpdatePassword() {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: ElevatedButton(
-        onPressed:
-            () => {
-              setState(() {
-                updatePassword = !updatePassword;
-              }),
-            },
-        style: ButtonStyle(
-          backgroundColor: WidgetStatePropertyAll(colorTextApp),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          "Đổi mật khẩu",
+          style: TextStyle(
+            color: colorTextApp,
+            letterSpacing: letterSpacingSmall,
+            fontSize: textfontSizeApp,
+            fontWeight: fontWeightMedium,
+          ),
         ),
-        child: Text(
-          "Udate password",
-          style: TextStyle(fontSize: textfontSizeApp),
+        CupertinoSwitch(
+          value: updatePassword,
+          onChanged: (value) => setState(() {
+            updatePassword = value;
+          }),
         ),
-      ),
+      ],
     );
   }
 
   Widget buildButtonUpdateInfo() {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 50),
+      padding: const EdgeInsets.only(top: spacingLarge),
       child: Align(
-        alignment: Alignment.centerLeft,
+        alignment: Alignment.centerRight,
         child: ElevatedButton(
-          style: ButtonStyle(
-            // backgroundColor: WidgetStatePropertyAll(
-            //   currentUser?.email == emailController.text &&
-            //           currentUser?.name == nameController.text
-            //       ? colorTextApp.withOpacity(opacityColorApp)
-            //       : colorButton,
-            // ),
-          ),
-          onPressed: () => {},
+          style: buttonStyle,
+          onPressed: () async {
+            Get.dialog(
+              Center(child: circularProgress),
+              barrierDismissible: false,
+            );
+
+            final name = nameController.text;
+            final currentPassword = currentPasswordController.text;
+            final newPassword = newPasswordController.text;
+            final confirmNewPassword = confirmNewPasswordController.text;
+            try {
+              Map<String, dynamic> data = {
+                "name": name,
+                "password": currentPassword,
+                "newPassword": newPassword,
+                "confirmNewPassword": confirmNewPassword,
+                "updatePassword": updatePassword,
+              };
+
+              final result = await ref
+                  .read(userHandleProvider.notifier)
+                  .update(data);
+
+              if (Get.isDialogOpen == true) {
+                Get.back();
+              }
+              if (result["statusCode"] == 200) {
+                showSnackbar(
+                  title: "Cập nhật thông tin",
+                  message:
+                      result["message"] ?? "Cập nhật thông tin thành công.",
+                  type: "success",
+                );
+              } else {
+                showSnackbar(
+                  type: "error",
+                  title: "Cập nhật thông tin",
+                  message: result["message"] ?? "Cập nhật thông tin thất bại!",
+                );
+              }
+            } catch (error) {
+              if (Get.isDialogOpen == true) {
+                Get.back();
+              }
+              showSnackbar(
+                title: "Lỗi hệ thống",
+                message: "Có lỗi xảy ra khi cập nhật thông tin: $error",
+                type: "error",
+              );
+            }
+          },
           child: Text(
-            "UPDATE",
+            "Cập nhật",
             style: TextStyle(fontSize: textfontSizeApp, color: colorTextApp),
           ),
         ),
@@ -231,44 +230,113 @@ class _InfoAccountPageState extends State<InfoAccountPage> {
 
   @override
   Widget build(BuildContext context) {
+    final background = ref.read(backgroundMovieHot.notifier).state;
+
+    final isKeyboardVisible = MediaQuery.of(context).viewInsets.bottom > 0;
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+
     return Scaffold(
+      extendBodyBehindAppBar: true,
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        backgroundColor: bgColorApp,
+        backgroundColor: Colors.transparent,
         iconTheme: IconThemeData(color: colorTextApp),
-        title: Text(
-          "Cập nhật",
-          style: TextStyle(
-            color: colorTextApp,
-            fontSize: textfontSizeTitleAppBar,
-          ),
-        ),
+        title: Text("Chỉnh sửa thông tin", style: tilteStyleApp),
       ),
       backgroundColor: bgColorApp,
-      body: Center(
-        child: SizedBox(
-          width: MediaQuery.of(context).size.width - 60,
-          child: Column(
-            children: [
-              buildName(),
-              SizedBox(height: 20),
-              buildEmail(),
-              SizedBox(height: 20),
-              buildButtonUpdatePassword(),
-              if (updatePassword) ...[
-                SizedBox(height: 20),
-                buildOldPassword(),
-                SizedBox(height: 20),
-                buildNewPassword(),
-                SizedBox(height: 20),
-                buildConfirmNewPassword(),
-              ],
-              SizedBox(height: 20),
-              Spacer(),
-              buildButtonUpdateInfo(),
-            ],
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          if (background.isNotEmpty) ...backgroundApp(background),
+          SafeArea(
+            child: Padding(
+              padding: EdgeInsets.only(
+                right: spacingMedium,
+                left: spacingMedium,
+                bottom: isKeyboardVisible ? bottomInset : 0,
+              ),
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    buildFeld(
+                      "",
+                      "Nhập họ tên",
+                      nameController,
+                      Icon(Icons.person),
+                      null,
+                      "",
+                    ),
+                    SizedBox(height: spacingBig),
+                    buildFeld(
+                      "",
+                      "Nhập email",
+                      emailController,
+                      Icon(Icons.email_outlined),
+                      null,
+                      "update",
+                    ),
+                    SizedBox(height: spacingBig),
+                    buildFeld(
+                      "date",
+                      "Nhập ngày sinh",
+                      birthdayController,
+                      Icon(Icons.calendar_month_outlined),
+                      null,
+                      "update",
+                    ),
+                    SizedBox(height: spacingBig),
+                    buildButtonUpdatePassword(),
+                    if (updatePassword) ...[
+                      SizedBox(height: spacingBig),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        spacing: spacingMedium,
+                        children: [
+                          buildFeld(
+                            "",
+                            "Nhập mật khẩu hiện tại",
+                            currentPasswordController,
+                            Icon(Icons.lock_outline_rounded),
+                            null,
+                            "",
+                          ),
+                          Text(
+                            "Quên mật khẩu",
+                            style: TextStyle(
+                              color: hexColorLogout,
+                              fontSize: textfontSizeApp,
+                              letterSpacing: letterSpacingSmall,
+                              fontWeight: fontWeightSemiBold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: spacingBig),
+                      buildFeld(
+                        "",
+                        "Nhập mật khẩu mới",
+                        newPasswordController,
+                        Icon(Icons.lock_outline_rounded),
+                        null,
+                        "",
+                      ),
+                      SizedBox(height: spacingBig),
+                      buildFeld(
+                        "",
+                        "Nhập lại mật khẩu mới",
+                        confirmNewPasswordController,
+                        Icon(Icons.lock_outline_rounded),
+                        null,
+                        "",
+                      ),
+                    ],
+                    buildButtonUpdateInfo(),
+                  ],
+                ),
+              ),
+            ),
           ),
-        ),
+        ],
       ),
     );
   }

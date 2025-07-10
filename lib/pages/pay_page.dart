@@ -1,0 +1,588 @@
+import 'package:ceni_fruit/config/background_app.dart';
+import 'package:ceni_fruit/config/const.dart';
+import 'package:ceni_fruit/config/show_snack_bar.dart';
+import 'package:ceni_fruit/config/style_login_register.dart';
+import 'package:ceni_fruit/config/convert_time.dart';
+import 'package:ceni_fruit/config/styles.dart';
+import 'package:ceni_fruit/model/cinema.dart';
+import 'package:ceni_fruit/model/food_drink.dart';
+import 'package:ceni_fruit/model/movie.dart';
+import 'package:ceni_fruit/model/movie_room.dart';
+import 'package:ceni_fruit/model/room.dart';
+import 'package:ceni_fruit/model/holding_seat.dart';
+import 'package:ceni_fruit/model/payment_method.dart';
+import 'package:ceni_fruit/pages/Payment/paypal_webview.dart';
+import 'package:ceni_fruit/provider/order_provider.dart';
+import 'package:ceni_fruit/provider/payment_method_provider.dart';
+import 'package:ceni_fruit/provider/paypal_provider.dart';
+import 'package:ceni_fruit/ticket_shape.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:slide_countdown/slide_countdown.dart';
+import 'package:get/get.dart';
+
+class PayPage extends ConsumerStatefulWidget {
+  final Movie movie;
+  final Cinema cinema;
+  final Room room;
+  final String selectedTime;
+  final MovieRoom movieRoom;
+  final List<PaymentMethod> paymentMethods;
+  final HoldingSeat? seatUser;
+
+  final List<Map<String, dynamic>> totalChooseFoodDrink;
+
+  final List<String> selectedSeats;
+  final double price;
+  final String typeInformationThisPage;
+
+  const PayPage({
+    super.key,
+    required this.movie,
+    required this.cinema,
+    required this.room,
+    required this.movieRoom,
+    required this.paymentMethods,
+    required this.selectedTime,
+    required this.totalChooseFoodDrink,
+    required this.price,
+    required this.selectedSeats,
+    required this.seatUser,
+    this.typeInformationThisPage = "page_payment",
+  });
+
+  @override
+  ConsumerState<PayPage> createState() => _PayPageState();
+}
+
+class _PayPageState extends ConsumerState<PayPage> {
+  late HoldingSeat? seatUser;
+  late List<PaymentMethod> paymentMethods;
+
+  @override
+  void initState() {
+    super.initState();
+    seatUser = widget.seatUser;
+    paymentMethods = widget.paymentMethods;
+  }
+
+  String? selectedPaymentMethod;
+
+  @override
+  Widget build(BuildContext context) {
+    final time = convertTime(seatUser?.expiredAt ?? "");
+    return Scaffold(
+      extendBodyBehindAppBar: true,
+      backgroundColor: bgColorApp,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        title: Text(
+          widget.typeInformationThisPage == "review"
+              ? "Thông tin vé"
+              : "Thanh toán",
+          style: tilteStyleApp,
+        ),
+        iconTheme: IconThemeData(color: colorTextApp),
+        bottom: seatUser != null && time != null
+            ? PreferredSize(
+                preferredSize: Size.fromHeight(11),
+                child: Container(
+                  width: 300,
+                  decoration: BoxDecoration(
+                    color: bgColorApp,
+                    borderRadius: borderRadiusButton,
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        "Thời gian giữ ghế:",
+                        style: TextStyle(
+                          color: colorTextApp,
+                          letterSpacing: letterSpacingSmall,
+                          fontWeight: fontWeightMedium,
+                          fontSize: textfontSizeNote,
+                        ),
+                      ),
+                      SlideCountdown(
+                        key: ValueKey(seatUser?.expiredAt),
+                        icon: Icon(
+                          Icons.timer_outlined,
+                          size: iconfontSizeNormal,
+                          color: colorIcon,
+                        ),
+                        slideDirection: SlideDirection.up,
+                        decoration: BoxDecoration(color: Colors.transparent),
+                        duration: Duration(
+                          hours: time["hours"]!,
+                          minutes: time["minutes"]!,
+                          seconds: time["seconds"]!,
+                        ),
+                        style: TextStyle(
+                          color: colorTextApp,
+                          letterSpacing: letterSpacingSmall,
+                          fontWeight: fontWeightMedium,
+                          fontSize: textfontSizeNote,
+                        ),
+                        // onDone: () {
+                        //   setState(() {
+                        //     seatUser = null;
+                        //   });
+                        //   Navigator.pop(context);
+                        //   Navigator.pop(context);
+                        // },
+                      ),
+                    ],
+                  ),
+                ),
+              )
+            : null,
+      ),
+      body: Stack(
+        fit: StackFit.expand,
+        children: [
+          ...backgroundApp(widget.movie.urlImage!),
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.only(
+                right: spacingMedium,
+                left: spacingMedium,
+                top: spacingMedium,
+              ),
+              child: Column(
+                spacing: spacingMedium,
+                children: [
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      spacing: spacingLarge,
+                      children: List.generate(
+                        widget.selectedSeats.length,
+                        (index) =>
+                            ticketShape(index + 1, widget.selectedSeats[index]),
+                      ),
+                    ),
+                  ),
+                  Expanded(child: informationOrder()),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget ticketShape(int index, String seat) {
+    return Align(
+      alignment: Alignment.topCenter,
+      child: Container(
+        color: Colors.transparent,
+        width: 350,
+        height: 180,
+        child: Stack(
+          children: [
+            CustomPaint(
+              painter: TicketShape(),
+              child: SizedBox(width: 350, height: 180),
+            ),
+            Row(
+              children: [
+                Expanded(
+                  child: RotatedBox(
+                    quarterTurns: 3,
+                    child: Center(
+                      child: Text(
+                        "Ticket# $index",
+                        style: TextStyle(
+                          color: Colors.black,
+                          letterSpacing: letterSpacingSmall,
+                          fontWeight: fontWeightMedium,
+                          fontSize: textfontSizeApp,
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  flex: 4,
+                  child: Padding(
+                    padding: const EdgeInsets.all(spacingSmall),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      spacing: spacingSmall,
+                      children: [
+                        Text(
+                          "Phim: ${widget.movie.name}",
+                          style: TextStyle(
+                            color: hexColorTextBlack,
+                            letterSpacing: letterSpacingSmall,
+                            fontWeight: fontWeightMedium,
+                            fontSize: textfontSizeApp,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 3,
+                        ),
+
+                        Row(
+                          spacing: spacingTiny,
+                          children: [
+                            Text(
+                              "Phòng: ${widget.room.roomNumber}",
+                              style: TextStyle(
+                                color: hexColorTextBlack,
+                                letterSpacing: letterSpacingSmall,
+                                fontWeight: fontWeightMedium,
+                                fontSize: textfontSizeApp,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 2,
+                            ),
+                            Text(
+                              ", ghế: $seat",
+                              style: TextStyle(
+                                color: hexColorTextBlack,
+                                letterSpacing: letterSpacingSmall,
+                                fontWeight: fontWeightMedium,
+                                fontSize: textfontSizeApp,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                              maxLines: 2,
+                            ),
+                          ],
+                        ),
+                        Text(
+                          "Suất: ${widget.selectedTime} ${widget.movieRoom.date}",
+                          style: TextStyle(
+                            color: hexColorTextBlack,
+                            letterSpacing: letterSpacingSmall,
+                            fontWeight: fontWeightMedium,
+                            fontSize: textfontSizeApp,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 2,
+                        ),
+                        Text(
+                          "Thời lượng: ${widget.movie.duration}",
+                          style: TextStyle(
+                            color: hexColorTextBlack,
+                            letterSpacing: letterSpacingSmall,
+                            fontWeight: fontWeightMedium,
+                            fontSize: textfontSizeApp,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 2,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget informationOrder() {
+    return RefreshIndicator(
+      onRefresh: () async {
+        try {
+          Get.dialog(
+            Center(child: circularProgress),
+            barrierDismissible: false,
+          );
+          final state = await ref
+              .read(paymentMethodNotifierProvider.notifier)
+              .loadPaymentMethod();
+          setState(() {
+            paymentMethods = state;
+          });
+          if (Get.isDialogOpen == true) {
+            Get.back();
+          }
+        } catch (error) {
+          if (Get.isDialogOpen == true) {
+            Get.back();
+          }
+          showSnackbar(
+            title: "Lỗi hệ thống",
+            message: "$error.",
+            type: "error",
+          );
+        }
+      },
+      child: ListView(
+        padding: const EdgeInsets.only(bottom: spacingMedium),
+        children: [
+          Text(
+            "Thông tin đặt vé phim",
+            style: TextStyle(
+              color: colorTextApp,
+              letterSpacing: letterSpacingSmall,
+              fontWeight: fontWeightMedium,
+              fontSize: textfontSizeApp,
+            ),
+          ),
+          const SizedBox(height: spacingMedium),
+          Text(
+            "Rạp : ${widget.cinema.name}",
+            style: TextStyle(
+              color: colorTextApp,
+              letterSpacing: letterSpacingSmall,
+              fontWeight: fontWeightNormal,
+              fontSize: textfontSizeNote,
+            ),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 2,
+          ),
+          const SizedBox(height: spacingMedium),
+
+          Text(
+            "Địa chỉ : ${widget.cinema.address}",
+            style: TextStyle(
+              color: colorTextApp,
+              letterSpacing: letterSpacingSmall,
+              fontWeight: fontWeightNormal,
+              fontSize: textfontSizeNote,
+            ),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 3,
+          ),
+          const SizedBox(height: spacingMedium),
+
+          if (widget.totalChooseFoodDrink.isNotEmpty)
+            Column(
+              spacing: spacingMedium,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Bắp nước",
+                  style: TextStyle(
+                    color: colorTextApp,
+                    letterSpacing: letterSpacingSmall,
+                    fontWeight: fontWeightMedium,
+                    fontSize: textfontSizeApp,
+                  ),
+                ),
+                Column(
+                  spacing: spacingMedium,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: List.generate(
+                    widget.totalChooseFoodDrink.length,
+                    (index) => Column(
+                      spacing: spacingMedium,
+                      children: [
+                        Text(
+                          "${index + 1} : ${widget.totalChooseFoodDrink[index]["id"].name} - ${widget.totalChooseFoodDrink[index]["id"].price} VND x ${widget.totalChooseFoodDrink[index]["quantity"]}",
+                          style: TextStyle(
+                            color: colorTextApp,
+                            letterSpacing: letterSpacingSmall,
+                            fontWeight: fontWeightNormal,
+                            fontSize: textfontSizeNote,
+                          ),
+                          overflow: TextOverflow.fade,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          if (widget.typeInformationThisPage == "review")
+            const SizedBox(height: spacingMedium),
+
+          Text(
+            "Giá vé : ${widget.movie.price} VND x ${widget.selectedSeats.length}",
+            style: TextStyle(
+              color: colorTextApp,
+              letterSpacing: letterSpacingSmall,
+              fontWeight: fontWeightMedium,
+              fontSize: textfontSizeApp,
+            ),
+          ),
+          const SizedBox(height: spacingMedium),
+
+          Text(
+            "Tổng cộng : ${widget.price} VND",
+            style: TextStyle(
+              color: colorTextApp,
+              letterSpacing: letterSpacingSmall,
+              fontWeight: fontWeightMedium,
+              fontSize: textfontSizeApp,
+            ),
+          ),
+          const SizedBox(height: spacingMedium),
+
+          if (widget.typeInformationThisPage != "review")
+            Text(
+              "Các phương thức thanh toán",
+              style: TextStyle(
+                color: colorTextApp,
+                letterSpacing: letterSpacingSmall,
+                fontWeight: fontWeightMedium,
+                fontSize: textfontSizeApp,
+              ),
+            ),
+          const SizedBox(height: spacingMedium),
+
+          if (widget.typeInformationThisPage != "review")
+            paymentMethods.isNotEmpty
+                ? Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: List.generate(
+                      paymentMethods.length,
+                      (index) => Row(
+                        children: [
+                          Expanded(
+                            child: GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  selectedPaymentMethod =
+                                      paymentMethods[index].paymentMethod;
+                                });
+                              },
+                              child: Text(
+                                " ${paymentMethods[index].paymentMethod}",
+                                style: TextStyle(
+                                  color: colorTextApp,
+                                  letterSpacing: letterSpacingSmall,
+                                  fontWeight: fontWeightNormal,
+                                  fontSize: textfontSizeNote,
+                                ),
+                                overflow: TextOverflow.fade,
+                              ),
+                            ),
+                          ),
+                          Radio<String>(
+                            value: paymentMethods[index].paymentMethod!,
+                            groupValue: selectedPaymentMethod,
+                            activeColor: colorIcon,
+                            onChanged: (value) => setState(() {
+                              selectedPaymentMethod = value;
+                            }),
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                : Text(
+                    "Hiện không có phương thức thanh toán nào được hỗ trợ.",
+                    style: TextStyle(
+                      color: colorTextWarning,
+                      letterSpacing: letterSpacingSmall,
+                      fontWeight: fontWeightNormal,
+                      fontSize: textfontSizeApp,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+          const SizedBox(height: spacingMedium),
+
+          if (widget.typeInformationThisPage != "review")
+            Center(
+              child: ElevatedButton(
+                onPressed: () async {
+                  try {
+                    Get.dialog(
+                      Center(child: circularProgress),
+                      barrierDismissible: false,
+                    );
+
+                    final navigator = Navigator.of(context);
+
+                    final foodDrinks = widget.totalChooseFoodDrink
+                        .map(
+                          (fd) => {
+                            "id": fd["id"].idFoodDrink,
+                            "quantity": fd["quantity"],
+                          },
+                        )
+                        .toList();
+
+                    Object data = {
+                      "idMovieRoom": widget.movieRoom.idMovieRoom,
+                      "foodDrinks": foodDrinks,
+                      "time": widget.selectedTime,
+                      "price": widget.price.toString(),
+                      "paymentMethod": selectedPaymentMethod,
+                      "selectedSeats": widget.selectedSeats,
+                      "expiredAt": widget.seatUser?.expiredAt,
+                    };
+
+                    // final createOrder = await ref
+                    //     .read(orderServiceProvider)
+                    //     .createOrder(data);
+
+                    if (Get.isDialogOpen == true) {
+                      Get.back();
+                    }
+
+                    switch (selectedPaymentMethod) {
+                      case "Paypal":
+                        final Object data = {"amount": "111", "orderId": "111"};
+                        final res = await ref
+                            .read(paypalServiceProvider)
+                            .createOrder(data);
+                        if (!res["success"]) {
+                          showSnackbar(
+                            title: "Paypal",
+                            message: res["message"],
+                            type: "error",
+                          );
+                          return;
+                        }
+                        String url = res["data"]["url"];
+                        if (!url.contains('?')) {
+                          url +=
+                              '?disable-funding=paylater&disable-funding=credit';
+                        } else {
+                          url +=
+                              '&disable-funding=paylater&disable-funding=credit';
+                        }
+                        navigator.push(
+                          MaterialPageRoute(
+                            builder: (_) => PayPalWebView(approvalUrl: url),
+                          ),
+                        );
+                        break;
+                    }
+
+                    // if (!createOrder["success"]) {
+                    //   showSnackbar(
+                    //     title: "Đặt vé",
+                    //     message: createOrder["message"],
+                    //     type: "error",
+                    //   );
+                    //   return;
+                    // }
+                  } catch (error) {
+                    if (Get.isDialogOpen == true) {
+                      Get.back();
+                    }
+                    showSnackbar(
+                      title: "Lỗi hệ thống",
+                      message: "$error",
+                      type: "error",
+                    );
+                  }
+                },
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: selectedPaymentMethod != null
+                      ? colorButton
+                      : hexColorPlaceHolder,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: borderRadiusButton,
+                  ),
+                ),
+
+                child: Text("Thanh toán", style: textStyleElevatedButton),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}

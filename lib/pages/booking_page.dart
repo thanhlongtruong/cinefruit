@@ -1,24 +1,33 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:ceni_fruit/config/background_app.dart';
+import 'package:ceni_fruit/config/const.dart';
+import 'package:ceni_fruit/config/show_snack_bar.dart';
 import 'package:ceni_fruit/config/styles.dart';
-import 'package:ceni_fruit/config/widget_loading_error.dart';
+import 'package:ceni_fruit/config/convert_time.dart';
+import 'package:ceni_fruit/config/catch_network_image.dart';
+import 'package:ceni_fruit/config/style_login_register.dart';
 import 'package:ceni_fruit/curvedclipper.dart';
 import 'package:ceni_fruit/model/cinema.dart';
 import 'package:ceni_fruit/model/movie.dart';
 import 'package:ceni_fruit/model/movie_room.dart';
-import 'package:ceni_fruit/model/order.dart';
 import 'package:ceni_fruit/model/room.dart';
-import 'package:ceni_fruit/provider/order.dart';
-import 'package:ceni_fruit/provider/ticket.dart';
+import 'package:ceni_fruit/model/holding_seat.dart';
+import 'package:ceni_fruit/pages/order_food_drink.dart';
+import 'package:ceni_fruit/provider/holding_seat_provider.dart';
+import 'package:ceni_fruit/provider/order_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
+import 'package:get/get.dart';
+import 'package:slide_countdown/slide_countdown.dart';
 
 class BookingPage extends ConsumerStatefulWidget {
   final Movie movie;
   final MovieRoom movieRoom;
   final Cinema cinema;
   final Room room;
+  final HoldingSeat? seatUser;
+  final List<String> seatsDiff;
+  final List<String> booked;
 
   const BookingPage({
     super.key,
@@ -26,6 +35,9 @@ class BookingPage extends ConsumerStatefulWidget {
     required this.movieRoom,
     required this.cinema,
     required this.room,
+    required this.seatUser,
+    required this.seatsDiff,
+    required this.booked,
   });
 
   @override
@@ -33,18 +45,33 @@ class BookingPage extends ConsumerStatefulWidget {
 }
 
 class _BookingPageState extends ConsumerState<BookingPage> {
-  String? selectedTime;
-  @override
-  void initState() {
-    super.initState();
-    if (widget.movieRoom.time != null && widget.movieRoom.time!.isNotEmpty) {
-      selectedTime = widget.movieRoom.time!.first;
-    }
-  }
+  late HoldingSeat? seatUser;
+  List<String> seatsDiff = [];
+  List<String> booked = [];
 
   List<String> selectedSeats = [];
 
-  List<String> stateSeat = ["selecting", "booked", "empty"];
+  String? selectedTime;
+  double price = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    if (widget.movieRoom.times != null && widget.movieRoom.times!.isNotEmpty) {
+      selectedTime = widget.movieRoom.times!.first;
+    }
+
+    seatUser = widget.seatUser;
+    selectedSeats = seatUser?.selectedSeat ?? [];
+    seatsDiff = widget.seatsDiff;
+    booked = widget.booked;
+    price = double.parse(
+      ((double.parse(widget.movie.price!)) * selectedSeats.length)
+          .toStringAsFixed(2),
+    );
+  }
+
+  List<String> stateSeat = ["selecting", "booked", "empty", "holdingDiff"];
 
   List<String> alphabet = List.generate(
     26,
@@ -56,62 +83,116 @@ class _BookingPageState extends ConsumerState<BookingPage> {
     return '$rowLetter${col + 1}';
   }
 
-  double price = 0;
-
-  List<String> selected = [
-    "A1",
-    "B1",
-    "C1",
-    "D1",
-    "A2",
-    "C2",
-    "A4",
-    "B4",
-    "C4",
-    "D4",
-    "D5",
-    "D6",
-    "A6",
-    "B6",
-    "C6",
-  ];
-
   AppBar appBar() {
+    final time = convertTime(seatUser?.expiredAt ?? "");
     return AppBar(
-      title: Text(
-        "${widget.cinema.name}",
-        style: const TextStyle(
-          color: colorTextApp,
-          fontSize: textfontSizeTitleAppBar,
-          letterSpacing: letterSpacingSmall,
-          fontWeight: fontWeightTitleAppBar,
-          shadows: [
-            Shadow(color: Colors.purple, blurRadius: 20, offset: Offset(0, 8)),
-          ],
-        ),
-      ),
+      title: Text("${widget.cinema.name}", style: tilteStyleApp),
       backgroundColor: Colors.transparent,
       iconTheme: IconThemeData(color: colorTextApp),
+      bottom: seatUser != null && time != null
+          ? PreferredSize(
+              preferredSize: Size.fromHeight(11),
+              child: Container(
+                width: 300,
+                decoration: BoxDecoration(
+                  color: bgColorApp,
+                  borderRadius: borderRadiusButton,
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "Thời gian giữ ghế:",
+                      style: TextStyle(
+                        color: colorTextApp,
+                        letterSpacing: letterSpacingSmall,
+                        fontWeight: fontWeightMedium,
+                        fontSize: textfontSizeNote,
+                      ),
+                    ),
+                    SlideCountdown(
+                      key: ValueKey(seatUser?.expiredAt),
+                      icon: Icon(
+                        Icons.timer_outlined,
+                        size: iconfontSizeNormal,
+                        color: colorIcon,
+                      ),
+                      slideDirection: SlideDirection.up,
+                      decoration: BoxDecoration(color: Colors.transparent),
+                      duration: Duration(
+                        hours: time["hours"]!,
+                        minutes: time["minutes"]!,
+                        seconds: time["seconds"]!,
+                      ),
+                      style: TextStyle(
+                        color: colorTextApp,
+                        letterSpacing: letterSpacingSmall,
+                        fontWeight: fontWeightMedium,
+                        fontSize: textfontSizeNote,
+                      ),
+                      onDone: () async {
+                        try {
+                          Get.dialog(
+                            Center(child: circularProgress),
+                            barrierDismissible: false,
+                          );
+                          final data = await ref
+                              .read(holdingSeatServiceProvider)
+                              .getSelectedSeat(widget.movieRoom.idMovieRoom!);
+
+                          if (Get.isDialogOpen == true) {
+                            Get.back();
+                          }
+
+                          if (!data["success"]) {
+                            showSnackbar(
+                              title: "Hoàn tác Ghế",
+                              message: data["message"],
+                              type: "error",
+                            );
+                            return;
+                          }
+
+                          setState(() {
+                            seatUser = null;
+                            selectedSeats = [];
+                            seatsDiff = [];
+                            price = double.parse(
+                              ((double.parse(widget.movie.price!)) *
+                                      selectedSeats.length)
+                                  .toStringAsFixed(2),
+                            );
+                          });
+                        } catch (error) {
+                          if (Get.isDialogOpen == true) {
+                            Get.back();
+                          }
+                          showSnackbar(
+                            title: "Ghế",
+                            message: "$error",
+                            type: "error",
+                          );
+                        }
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            )
+          : null,
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    final orderNotifier = ref.watch(orderProvider(widget.movieRoom));
-    if (orderNotifier.isLoading) {
-      buildLoadingScreen();
-    }
-    if (orderNotifier.hasError) {
-      buildErrorScreen(orderNotifier.error);
-    }
-    final orders = orderNotifier.value;
-    // final ticketNotifier = ref.watch(ticketProvider(widget.movieRoom));
     return Scaffold(
       extendBodyBehindAppBar: true,
       appBar: appBar(),
       body: Stack(
         children: [
           ...backgroundApp(widget.movie.urlImage!),
+
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.all(spacingMedium),
@@ -120,17 +201,16 @@ class _BookingPageState extends ConsumerState<BookingPage> {
                 children: [
                   buildNameMovieAndDropDown(),
                   buildScreen(),
-                  const SizedBox(height: 15),
+                  const SizedBox(height: spacingMedium),
                   SizedBox(height: 300, child: buildSingleSeat()),
-                  const SizedBox(height: 15),
+                  const SizedBox(height: spacingBig),
                   Expanded(
                     child: SingleChildScrollView(
                       child: Column(
                         children: [
                           buildLegend(),
-                          const SizedBox(height: 30),
+                          const SizedBox(height: spacingMedium),
                           if (price > 0) buildShowSelectingSeat(),
-                          const SizedBox(height: 20),
                           buildPrice(),
                         ],
                       ),
@@ -154,7 +234,7 @@ class _BookingPageState extends ConsumerState<BookingPage> {
           style: TextStyle(
             color: colorTextApp,
             fontWeight: fontWeightMedium,
-            fontSize: textfontSizeNote,
+            fontSize: textfontSizeApp,
             letterSpacing: letterSpacingSmall,
           ),
         ),
@@ -168,8 +248,8 @@ class _BookingPageState extends ConsumerState<BookingPage> {
                       : "");
               return Text(
                 seatText,
-                style: TextStyle(
-                  fontSize: textfontSizeNote,
+                style: const TextStyle(
+                  fontSize: textfontSizeApp,
                   fontWeight: fontWeightMedium,
                   color: colorTextApp,
                   letterSpacing: letterSpacingSmall,
@@ -188,18 +268,20 @@ class _BookingPageState extends ConsumerState<BookingPage> {
       children: [
         Text(
           "${widget.movie.name}",
-          style: TextStyle(
+          style: const TextStyle(
             fontSize: textfontSizeTitleAppBar,
             fontWeight: fontWeightSemiBold,
             color: colorTextApp,
             letterSpacing: letterSpacingSmall,
           ),
+          overflow: TextOverflow.ellipsis,
+          maxLines: 2,
         ),
         IntrinsicWidth(
           child: Container(
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: borderRadiusButton,
             ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton2<String>(
@@ -226,17 +308,17 @@ class _BookingPageState extends ConsumerState<BookingPage> {
                 iconStyleData: const IconStyleData(
                   icon: Icon(
                     Icons.arrow_drop_down,
-                    size: iconfontSizeApp,
+                    size: iconfontSizeNormal,
                     color: Colors.black,
                   ),
                 ),
 
-                items: (widget.movieRoom.time ?? []).map((time) {
+                items: (widget.movieRoom.times ?? []).map((time) {
                   return DropdownMenuItem<String>(
                     value: time,
                     child: Text(
                       time,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: textfontSizeApp,
                         fontWeight: fontWeightMedium,
                         letterSpacing: letterSpacingSmall,
@@ -279,7 +361,7 @@ class _BookingPageState extends ConsumerState<BookingPage> {
                   child: Center(
                     child: Text(
                       alphabet[index],
-                      style: TextStyle(
+                      style: const TextStyle(
                         color: colorTextApp,
                         fontSize: textfontSizeNote,
                         fontWeight: fontWeightMedium,
@@ -306,7 +388,7 @@ class _BookingPageState extends ConsumerState<BookingPage> {
                         child: Center(
                           child: Text(
                             "${index + 1}",
-                            style: TextStyle(
+                            style: const TextStyle(
                               color: colorTextApp,
                               fontSize: textfontSizeNote,
                               fontWeight: fontWeightMedium,
@@ -325,37 +407,127 @@ class _BookingPageState extends ConsumerState<BookingPage> {
                         children: List.generate(columnCount, (col) {
                           final seatCode = getSeatCode(row, col);
                           bool isSelected = selectedSeats.contains(seatCode);
-                          bool checkBookedSeat = selected.contains(seatCode);
+                          bool checkBookedSeat = booked.contains(seatCode);
+                          bool checkSeatsDiff = seatsDiff.contains(seatCode);
                           return GestureDetector(
-                            onTap: () {
-                              if (checkBookedSeat) {
-                                return;
-                              }
-                              setState(() {
-                                if (selectedSeats.contains(seatCode)) {
-                                  selectedSeats.remove(seatCode);
-                                } else {
-                                  selectedSeats.add(seatCode);
+                            onTap: () async {
+                              try {
+                                if (checkBookedSeat || checkSeatsDiff) {
+                                  return;
                                 }
-                                price = double.parse(
-                                  ((widget.movie.price ?? 0) *
-                                          selectedSeats.length)
-                                      .toStringAsFixed(2),
+
+                                Get.dialog(
+                                  Center(child: circularProgress),
+                                  barrierDismissible: false,
                                 );
-                              });
+
+                                final data = await ref
+                                    .read(holdingSeatServiceProvider)
+                                    .chooseSeat(
+                                      idMovieRoom:
+                                          widget.movieRoom.idMovieRoom!,
+                                      seat: seatCode,
+                                    );
+                                final dataa = await ref
+                                    .read(holdingSeatServiceProvider)
+                                    .getSelectedSeat(
+                                      widget.movieRoom.idMovieRoom!,
+                                    );
+
+                                final dataBooked = await ref
+                                    .read(orderServiceProvider)
+                                    .getBooked(
+                                      widget.room.idRoom!,
+                                      widget.movie.idMovie!,
+                                    );
+
+                                    await ref
+                                    .read(holdingSeatNofierProvider.notifier)
+                                    .getHoldingSeatUser();
+
+                                if (Get.isDialogOpen == true) {
+                                  Get.back();
+                                }
+
+                                if (data["data"]["type"] == "deleted") {
+                                  setState(() {
+                                    seatUser = null;
+                                    selectedSeats = [];
+                                    seatsDiff = [];
+                                    price = double.parse(
+                                      ((double.parse(widget.movie.price!)) *
+                                              selectedSeats.length)
+                                          .toStringAsFixed(2),
+                                    );
+                                  });
+                                  return;
+                                }
+
+                                if (!data["success"]) {
+                                  showSnackbar(
+                                    title: "Ghế",
+                                    message: data["message"],
+                                    type: "error",
+                                  );
+                                  return;
+                                }
+
+                                if (!dataBooked["success"]) {
+                                  showSnackbar(
+                                    title: "Ghế",
+                                    message: dataBooked["message"],
+                                    type: "error",
+                                  );
+                                  return;
+                                }
+
+                                setState(() {
+                                  seatUser = HoldingSeat.fromJson(
+                                    dataa["data"]["seatUser"],
+                                  );
+                                  selectedSeats = seatUser?.selectedSeat ?? [];
+                                  seatsDiff =
+                                      (dataa["data"]["seatsDiff"] as List)
+                                          .map((s) => s.toString())
+                                          .toList();
+                                  booked =
+                                      (dataBooked["data"]["booked"] as List)
+                                          .map((s) => s.toString())
+                                          .toList();
+                                  price = double.parse(
+                                    ((double.parse(widget.movie.price!)) *
+                                            selectedSeats.length)
+                                        .toStringAsFixed(2),
+                                  );
+                                });
+                              } catch (error) {
+                                if (Get.isDialogOpen == true) {
+                                  Get.back();
+                                }
+                                showSnackbar(
+                                  title: "Ghế",
+                                  message: "$error",
+                                  type: "error",
+                                );
+                              }
                             },
                             child: Container(
                               width: sizeSeat,
                               height: sizeSeat,
                               decoration: BoxDecoration(
-                                color: checkBookedSeat
+                                color: checkBookedSeat || checkSeatsDiff
                                     ? Colors.black87
                                     : Colors.white,
                                 borderRadius: borderRadiusButtonSmall,
                                 border: isSelected
                                     ? null
                                     : checkBookedSeat
-                                    ? Border.all(color: Colors.red, width: 3)
+                                    ? Border.all(
+                                        color: hexColorLogout,
+                                        width: 3,
+                                      )
+                                    : checkSeatsDiff
+                                    ? Border.all(color: colorIcon, width: 3)
                                     : Border.all(
                                         color: Colors.blue.shade700,
                                         width: 2,
@@ -364,11 +536,12 @@ class _BookingPageState extends ConsumerState<BookingPage> {
                               child: isSelected
                                   ? ClipRRect(
                                       borderRadius: borderRadiusButtonSmall,
-                                      child: CachedNetworkImage(
-                                        height: sizeSeat,
-                                        width: sizeSeat,
-                                        fit: BoxFit.fill,
-                                        imageUrl: widget.movie.urlImage!,
+                                      child: cachedNetworkImageConfig(
+                                        widget.movie.urlImage!,
+                                        sizeSeat,
+                                        sizeSeat,
+                                        BoxFit.fill,
+                                        iconfontSizeTiny,
                                       ),
                                     )
                                   : null,
@@ -398,7 +571,14 @@ class _BookingPageState extends ConsumerState<BookingPage> {
     return Column(
       spacing: spacingMedium,
       children: [
-        legendItem(Colors.white, 'Ghế đơn', stateSeat[2]),
+        Row(
+          spacing: spacingBig,
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            legendItem(Colors.white, 'Ghế đơn', stateSeat[2]),
+            legendItem(Colors.black87, 'Ng.đang giữ', stateSeat[3]),
+          ],
+        ),
         Row(
           mainAxisAlignment: MainAxisAlignment.start,
           spacing: spacingBig,
@@ -415,7 +595,9 @@ class _BookingPageState extends ConsumerState<BookingPage> {
     final setBorder = stateSeat[2] == state
         ? Border.all(color: Colors.blue.shade700, width: 2)
         : stateSeat[1] == state
-        ? Border.all(color: Colors.red, width: 3)
+        ? Border.all(color: hexColorLogout, width: 3)
+        : stateSeat[3] == state
+        ? Border.all(color: colorIcon, width: 3)
         : null;
     return Row(
       spacing: spacingMedium,
@@ -431,11 +613,12 @@ class _BookingPageState extends ConsumerState<BookingPage> {
           child: stateSeat[0] == state
               ? ClipRRect(
                   borderRadius: borderRadiusButtonSmall,
-                  child: CachedNetworkImage(
-                    imageUrl: widget.movie.urlImage!,
-                    height: 28,
-                    width: 28,
-                    fit: BoxFit.fill,
+                  child: cachedNetworkImageConfig(
+                    widget.movie.urlImage!,
+                    28,
+                    28,
+                    BoxFit.fill,
+                    iconfontSizeTiny,
                   ),
                 )
               : null,
@@ -463,31 +646,40 @@ class _BookingPageState extends ConsumerState<BookingPage> {
             if (selectedState)
               Text(
                 "$price VND",
-                style: TextStyle(
+                style: const TextStyle(
                   color: Colors.orange,
-                  fontSize: 20,
+                  fontSize: textfontSizeTitleAppBar,
                   fontWeight: FontWeight.bold,
                 ),
               ),
           ],
         ),
         ElevatedButton(
-          onPressed: () {},
+          onPressed: () {
+            if (price > 0 && selectedSeats.isNotEmpty) {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => OrderFoodDrink(
+                    movie: widget.movie,
+                    selectedSeats: selectedSeats,
+                    price: price,
+                    cinema: widget.cinema,
+                    room: widget.room,
+                    movieRoom: widget.movieRoom,
+                    time: selectedTime ?? "",
+                    seatUser: seatUser,
+                  ),
+                ),
+              );
+            }
+            return;
+          },
           style: ElevatedButton.styleFrom(
-            backgroundColor: selectedState ? Colors.orange : Colors.grey,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8),
-            ),
+            backgroundColor: selectedState ? colorButton : hexColorPlaceHolder,
+            shape: RoundedRectangleBorder(borderRadius: borderRadiusButton),
           ),
-          child: Text(
-            'Tiếp tục',
-            style: TextStyle(
-              color: colorTextApp,
-              fontWeight: fontWeightMedium,
-              fontSize: textfontSizeApp,
-              letterSpacing: letterSpacingSmall,
-            ),
-          ),
+          child: Text('Tiếp tục', style: textStyleElevatedButton),
         ),
       ],
     );
