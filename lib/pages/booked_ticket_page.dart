@@ -21,6 +21,7 @@ import 'package:ceni_fruit/provider/holding_seat_provider.dart';
 import 'package:ceni_fruit/provider/movie_hot_provider.dart';
 import 'package:ceni_fruit/provider/order_provider.dart';
 import 'package:ceni_fruit/provider/user_profile_provider.dart';
+import 'package:ceni_fruit/service/currency_exchange_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
@@ -467,6 +468,7 @@ class _BookedTicketPageState extends ConsumerState<BookedTicketPage> {
     final stateOrderWithTicket = ref.watch(getOrderWithTicketIdUser);
     final stateHoldingSeat = ref.watch(holdingSeatNofierProvider);
     final userProfileState = ref.watch(userProfile);
+
     if (userProfileState.value == null) {
       return Scaffold(
         extendBodyBehindAppBar: true,
@@ -548,6 +550,7 @@ class _BookedTicketPageState extends ConsumerState<BookedTicketPage> {
                   await ref
                       .read(getOrderWithTicketIdUser.notifier)
                       .loadTicket();
+
                 },
                 child: ListView(
                   physics: const AlwaysScrollableScrollPhysics(),

@@ -15,6 +15,7 @@ import 'package:ceni_fruit/pages/Payment/paypal_webview.dart';
 import 'package:ceni_fruit/provider/order_provider.dart';
 import 'package:ceni_fruit/provider/payment_method_provider.dart';
 import 'package:ceni_fruit/provider/paypal_provider.dart';
+import 'package:ceni_fruit/service/currency_exchange_service.dart';
 import 'package:ceni_fruit/ticket_shape.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -59,11 +60,14 @@ class _PayPageState extends ConsumerState<PayPage> {
   late HoldingSeat? seatUser;
   late List<PaymentMethod> paymentMethods;
 
+  double price = 0;
+
   @override
   void initState() {
     super.initState();
     seatUser = widget.seatUser;
     paymentMethods = widget.paymentMethods;
+    price = widget.price;
   }
 
   String? selectedPaymentMethod;
@@ -407,7 +411,7 @@ class _PayPageState extends ConsumerState<PayPage> {
           const SizedBox(height: spacingMedium),
 
           Text(
-            "Tổng cộng : ${widget.price} VND",
+            "Tổng cộng : $price ${selectedPaymentMethod == "Paypal" ? "USD" : "VND"}",
             style: TextStyle(
               color: colorTextApp,
               letterSpacing: letterSpacingSmall,
@@ -439,11 +443,56 @@ class _PayPageState extends ConsumerState<PayPage> {
                         children: [
                           Expanded(
                             child: GestureDetector(
-                              onTap: () {
-                                setState(() {
-                                  selectedPaymentMethod =
-                                      paymentMethods[index].paymentMethod;
-                                });
+                              onTap: () async {
+                                selectedPaymentMethod =
+                                    paymentMethods[index].paymentMethod;
+                                if (selectedPaymentMethod == "Paypal") {
+                                  try {
+                                    Get.dialog(
+                                      Center(child: circularProgress),
+                                      barrierDismissible: false,
+                                    );
+                                    final result = await getExchangeRate();
+                                    if (Get.isDialogOpen == true) {
+                                      Get.back();
+                                    }
+                                    if (!result["success"] ||
+                                        result["vnd"] == null) {
+                                      showSnackbar(
+                                        title: "USD",
+                                        message: result["message"],
+                                        type: "error",
+                                      );
+                                    }
+
+                                    List<String> vnd = result["vnd"]
+                                        .replaceAll(RegExp(r'\s+'), " ")
+                                        .split(" ");
+
+                                    double parse = double.parse(vnd[0]);
+                                    setState(() {
+                                      price = double.parse(
+                                        (parse * widget.price).toStringAsFixed(
+                                          3,
+                                        ),
+                                      );
+                                    });
+                                  } catch (e) {
+                                    if (Get.isDialogOpen == true) {
+                                      Get.back();
+                                    }
+                                    showSnackbar(
+                                      title: "Lỗi hệ thống",
+                                      message: "$e",
+                                      type: "error",
+                                    );
+                                  }
+                                } else {
+                                  setState(() {
+                                    selectedPaymentMethod =
+                                        paymentMethods[index].paymentMethod;
+                                  });
+                                }
                               },
                               child: Text(
                                 " ${paymentMethods[index].paymentMethod}",
@@ -542,11 +591,19 @@ class _PayPageState extends ConsumerState<PayPage> {
                           url +=
                               '&disable-funding=paylater&disable-funding=credit';
                         }
-                        navigator.push(
+                        final result = await navigator.push(
                           MaterialPageRoute(
                             builder: (_) => PayPalWebView(approvalUrl: url),
                           ),
                         );
+
+                        if (result == 'success') {
+                          print("success");
+                        }
+                        if (result == 'cancel') {
+                          print("cancel");
+                        }
+
                         break;
                     }
 

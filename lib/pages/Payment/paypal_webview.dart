@@ -29,6 +29,7 @@ class _PayPalWebViewState extends State<PayPalWebView> {
               final uri = Uri.parse(url);
               final orderId = uri.queryParameters['orderId'];
               final token = uri.queryParameters['token'];
+              
               print(orderId);
               // Bạn có thể gọi API xác nhận ở đây nếu muốn
               // await http.get('yourserver.com/pay/success?orderId=...&token=...');

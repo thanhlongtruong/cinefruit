@@ -31,13 +31,16 @@ final dioProvider = Provider<Dio>((ref) {
       ? 'http://127.0.0.1:2020'
       : 'http://localhost:2020';
 
+  const backupUrl = 'https://wh54v89v-2020.asse.devtunnels.ms';
+
   final dio = Dio(
     BaseOptions(
-      baseUrl: baseUrl,
+      baseUrl: backupUrl,
       connectTimeout: Duration(seconds: 60),
       receiveTimeout: Duration(seconds: 60),
     ),
   );
+
   final excludedPaths = [
     '/user/login',
     '/user/register',
@@ -47,7 +50,7 @@ final dioProvider = Provider<Dio>((ref) {
     "/cinema/get",
     "/food_drink/get/all",
     "movie_room/get/movie",
-    "/payment_method/get/all"
+    "/payment_method/get/all",
   ];
 
   final userService = UserService(dio);
