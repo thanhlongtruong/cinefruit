@@ -63,5 +63,32 @@ class MovieService {
     }
   }
 
-  
+  Future<Map<String, dynamic>> ratingMovie(String idMovieRoom, double score) async {
+    try {
+      final response = await dio.post(
+        "/rate_movie/update/rate",
+        data: {"idMovieRoom": idMovieRoom, "score": score},
+      );
+      return {
+        "success": response.statusCode == 200,
+        "message": response.data["message"],
+        "movie": response.statusCode == 200 ? response.data["movie"] : [],
+      };
+    } on DioException catch (error) {
+      String errorMessage = getDioErrorMessage(error);
+
+      return {
+        "success": false,
+        "message": errorMessage,
+        "movie": [],
+        "typeError": error.response?.data["typeError"] ?? error.error,
+      };
+    } catch (error) {
+      return {
+        "success": false,
+        "message": "Lỗi không xác định: ${error.toString()}",
+        "movie": [],
+      };
+    }
+  }
 }

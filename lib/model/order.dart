@@ -7,7 +7,7 @@ class Order {
   List<Map<String, dynamic>>? foodDrinks;
   String? time;
   String? date;
-  double? price;
+  String? price;
   String? paymentStatus;
   String? paymentMethod;
   String? createdAt;
@@ -31,7 +31,7 @@ class Order {
     idOrder = json["_id"];
 
     idMovieRoom = json["idMovieRoom"];
-    
+
     if (json["idMovieRoom"] is String) {
       idMovieRoom = json["idMovieRoom"];
     } else if (json["idMovieRoom"] is Map) {
@@ -46,11 +46,7 @@ class Order {
 
     time = json["time"];
 
-    if (json["price"] is double) {
-      price = json["price"];
-    } else if (json["price"] is String) {
-      price = double.parse(json["price"]);
-    }
+    price = json["price"];
 
     paymentStatus = json["paymentStatus"];
 

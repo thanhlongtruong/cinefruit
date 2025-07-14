@@ -51,6 +51,8 @@ final dioProvider = Provider<Dio>((ref) {
     "/food_drink/get/all",
     "movie_room/get/movie",
     "/payment_method/get/all",
+    "/user/verificarion-email",
+    "/user/update/verification",
   ];
 
   final userService = UserService(dio);

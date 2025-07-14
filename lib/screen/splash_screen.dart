@@ -4,6 +4,7 @@ import "package:ceni_fruit/config/widget_loading_error.dart";
 import "package:ceni_fruit/provider/movie_hot_provider.dart";
 import "package:ceni_fruit/provider/movie_provider.dart";
 import "package:ceni_fruit/provider/payment_method_provider.dart";
+import "package:ceni_fruit/provider/user_profile_provider.dart";
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 
@@ -38,16 +39,14 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       final movieHotNotifier = ref.read(movieHotProvider.notifier);
       final movieNotifier = ref.read(movieProvider.notifier);
       final cinemaNotifier = ref.read(cinemaProvider.notifier);
-      final paymentMethodNotifier = ref.read(
-        paymentMethodNotifierProvider.notifier,
-      );
+      final userProfileState = ref.read(userProfile.notifier);
       ref.read(backgroundMovieHot);
 
       final futures = [
         movieHotNotifier.loadMoviesHot(),
         movieNotifier.loadMovies(),
         cinemaNotifier.loadCinemas(),
-        paymentMethodNotifier.loadPaymentMethod(),
+        userProfileState.loadProfile(),
       ];
 
       await Future.wait(futures);

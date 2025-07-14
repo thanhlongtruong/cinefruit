@@ -95,7 +95,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                 ),
               ),
             ),
-            Text("${movieSelect?.duration}", style: style_),
+            Text("${movieSelect?.duration} phút", style: style_),
           ],
         ),
 
@@ -115,7 +115,7 @@ class _HomePageState extends ConsumerState<HomePage> {
             barrierDismissible: false,
           );
 
-          final dateNow = DateTime.now();
+          final dateNow = DateTime.now().add(const Duration(days: 1));
           final dateFormat = DateFormat("dd/MM/yyyy");
 
           final params = GetMovieParams(
@@ -155,11 +155,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           if (Get.isDialogOpen == true) {
             Get.back();
           }
-          showSnackbar(
-            title: "Lỗi hệ thống",
-            message: "$error",
-            type: "error",
-          );
+          showSnackbar(title: "Lỗi hệ thống", message: "$error", type: "error");
         }
       },
       child: Container(

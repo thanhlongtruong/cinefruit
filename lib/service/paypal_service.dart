@@ -6,7 +6,7 @@ class PaypalService {
 
   PaypalService(this.dio);
 
-  Future<Map<String, dynamic>> createOrder(Object data) async {
+  Future<Map<String, dynamic>> payPaypal(Object data) async {
     try {
       final response = await dio.post("/paypal/pay", data: data);
       return {

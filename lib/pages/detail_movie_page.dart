@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:ceni_fruit/config/const.dart';
 import 'package:ceni_fruit/config/day_of_cinema.dart';
+import 'package:ceni_fruit/config/popup_rating_movie.dart';
 import 'package:ceni_fruit/config/show_snack_bar.dart';
 import 'package:ceni_fruit/config/style_button.dart';
 import 'package:ceni_fruit/config/catch_network_image.dart';
@@ -14,6 +15,7 @@ import 'package:ceni_fruit/model/movie_room.dart';
 import 'package:ceni_fruit/model/room.dart';
 import 'package:ceni_fruit/model/user.dart';
 import 'package:ceni_fruit/pages/login_page.dart';
+import 'package:ceni_fruit/provider/cinema_provider.dart';
 import 'package:ceni_fruit/provider/holding_seat_provider.dart';
 import 'package:ceni_fruit/provider/order_provider.dart';
 import 'package:ceni_fruit/provider/user_profile_provider.dart';
@@ -49,12 +51,15 @@ class _DetailMovieScreenState extends ConsumerState<DetailMovieScreen> {
   late List<Cinema> cinemas;
   late List<Room> rooms;
   late List<MovieRoom> movieRooms;
+  double score = 0;
 
   late GetMovieParams params;
 
   String? videoId;
   int selectedDate = 0;
-  DateTime date = DateTime.now();
+  DateTime date = DateUtils.dateOnly(
+    DateTime.now().add(const Duration(days: 1)),
+  );
 
   List<Cinema> fillterCinemas = [];
 
@@ -482,7 +487,27 @@ class _DetailMovieScreenState extends ConsumerState<DetailMovieScreen> {
                                 ),
                               ),
                               GestureDetector(
-                                onTap: () {},
+                                onTap: () async {
+                                  DetailCinemaState detailCinemaState =
+                                      DetailCinemaState(
+                                        cinema: null,
+                                        movieRooms: movieRooms,
+                                        movie: movie,
+                                        rooms: rooms,
+                                      );
+                                  await popupRatingMovie(
+                                    ref: ref,
+                                    detailCinemaState: detailCinemaState,
+                                    onScoreChanged: (value) {
+                                      setState(() {
+                                        score = value;
+                                      });
+                                    },
+                                    getMovieDate: () async {
+                                      await funcGetData();
+                                    },
+                                  );
+                                },
                                 child: Text(
                                   "Đánh giá",
                                   style: styleTextSpecial,
@@ -497,7 +522,10 @@ class _DetailMovieScreenState extends ConsumerState<DetailMovieScreen> {
                                 Icons.history_rounded,
                                 color: Colors.amber,
                               ),
-                              Text("${widget.movie.duration}", style: style),
+                              Text(
+                                "${widget.movie.duration} phút",
+                                style: style,
+                              ),
                             ],
                           ),
                           Row(

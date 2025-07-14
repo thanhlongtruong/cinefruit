@@ -13,6 +13,7 @@ import 'package:ceni_fruit/model/food_drink.dart';
 import 'package:ceni_fruit/model/holding_seat.dart';
 import 'package:ceni_fruit/model/movie.dart';
 import 'package:ceni_fruit/model/movie_room.dart';
+import 'package:ceni_fruit/model/payment_method.dart';
 import 'package:ceni_fruit/model/room.dart';
 import 'package:ceni_fruit/model/ticket.dart';
 import 'package:ceni_fruit/pages/booking_page.dart';
@@ -20,8 +21,8 @@ import 'package:ceni_fruit/pages/pay_page.dart';
 import 'package:ceni_fruit/provider/holding_seat_provider.dart';
 import 'package:ceni_fruit/provider/movie_hot_provider.dart';
 import 'package:ceni_fruit/provider/order_provider.dart';
+import 'package:ceni_fruit/provider/payment_method_provider.dart';
 import 'package:ceni_fruit/provider/user_profile_provider.dart';
-import 'package:ceni_fruit/service/currency_exchange_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
@@ -36,7 +37,9 @@ class BookedTicketPage extends ConsumerStatefulWidget {
 }
 
 class _BookedTicketPageState extends ConsumerState<BookedTicketPage> {
-  Widget buildItem(data) {
+  late HoldingSeatUserAndDiff? holdingSeatUser;
+
+  Widget buildItem(data, List<PaymentMethod> paymentMethodState) {
     DateTime parseDate(createdAt) {
       return DateTime.parse(createdAt).toLocal();
     }
@@ -188,7 +191,7 @@ class _BookedTicketPageState extends ConsumerState<BookedTicketPage> {
                                   cinema: cinema,
                                   room: room,
                                   movieRoom: movieRoom,
-                                  paymentMethods: [],
+                                  paymentMethods: paymentMethodState,
                                   selectedTime: orderWithTicket.order.time!,
                                   totalChooseFoodDrink: totalChooseFoodDrink,
                                   price: orderWithTicket.order.price!,
@@ -199,6 +202,8 @@ class _BookedTicketPageState extends ConsumerState<BookedTicketPage> {
                                           time != null
                                       ? "page_payment"
                                       : "review",
+                                  selectedPaymentMethod:
+                                      orderWithTicket.order.paymentMethod!,
                                 ),
                               ),
                             );
@@ -210,7 +215,7 @@ class _BookedTicketPageState extends ConsumerState<BookedTicketPage> {
                                 : "Thanh toán",
                             style: TextStyle(
                               fontWeight: fontWeightNormal,
-                              color: const Color.fromARGB(255, 81, 101, 109),
+                              color: hexColorInformationSpecial,
                               letterSpacing: letterSpacingSmall,
                               fontSize: textfontSizeNote,
                             ),
@@ -220,39 +225,58 @@ class _BookedTicketPageState extends ConsumerState<BookedTicketPage> {
                         if (orderWithTicket.order.expiredAt != null &&
                             time != null)
                           customElevatedButtonBgTransparent(
-                            () {
-                              final selectedSeats = tickets
-                                  .map((ticket) => ticket.seatNumber)
-                                  .toList();
-                              List<String> listWithoutNulls = selectedSeats
-                                  .whereType<String>()
-                                  .toList();
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (_) => PayPage(
-                                    movie: movie,
-                                    cinema: cinema,
-                                    room: room,
-                                    movieRoom: movieRoom,
-                                    paymentMethods: [],
-                                    selectedTime: orderWithTicket.order.time!,
-                                    totalChooseFoodDrink: totalChooseFoodDrink,
-                                    price: orderWithTicket.order.price!,
-                                    selectedSeats: listWithoutNulls,
-                                    seatUser: null,
-                                    typeInformationThisPage:
-                                        orderWithTicket.order.expiredAt !=
-                                                null &&
-                                            time != null
-                                        ? "page_payment"
-                                        : "review",
-                                  ),
-                                ),
+                            () async {
+                              Get.dialog(
+                                Center(child: circularProgress),
+                                barrierDismissible: false,
                               );
+
+                              final resultDelOrderWithTicket = await ref
+                                  .read(orderServiceProvider)
+                                  .delOrderWithTicket(
+                                    orderWithTicket.order.idOrder!,
+                                  );
+
+                              if (resultDelOrderWithTicket["success"]) {
+                                final resultUndoSeat = await ref
+                                    .read(holdingSeatServiceProvider)
+                                    .undoSeat(
+                                      holdingSeatUser!
+                                          .holdingSeat!
+                                          .idHoldingSeat!,
+                                    );
+
+                                if (!resultUndoSeat["success"]) {
+                                  showSnackbar(
+                                    title: "Vé",
+                                    message:
+                                        resultDelOrderWithTicket["message"],
+                                    type: "error",
+                                  );
+                                  return;
+                                }
+
+                                await ref
+                                    .read(holdingSeatNofierProvider.notifier)
+                                    .getHoldingSeatUser();
+                                await ref
+                                    .read(getOrderWithTicketIdUser.notifier)
+                                    .loadTicket();
+                              }
+                              if (Get.isDialogOpen == true) {
+                                Get.back();
+                              }
+                              if (!resultDelOrderWithTicket["success"]) {
+                                showSnackbar(
+                                  title: "Vé",
+                                  message: resultDelOrderWithTicket["message"],
+                                  type: "error",
+                                );
+                                return;
+                              }
                             },
                             Text(
-                              "Thay đổi",
+                              "Hoàn tác",
                               style: TextStyle(
                                 fontWeight: fontWeightNormal,
                                 color: hexColorInformationSpecial,
@@ -465,9 +489,10 @@ class _BookedTicketPageState extends ConsumerState<BookedTicketPage> {
   @override
   Widget build(BuildContext context) {
     final background = ref.read(backgroundMovieHot.notifier).state;
+    final userProfileState = ref.watch(userProfile);
     final stateOrderWithTicket = ref.watch(getOrderWithTicketIdUser);
     final stateHoldingSeat = ref.watch(holdingSeatNofierProvider);
-    final userProfileState = ref.watch(userProfile);
+    final paymentMethod = ref.watch(paymentMethodNotifierProvider);
 
     if (userProfileState.value == null) {
       return Scaffold(
@@ -476,6 +501,7 @@ class _BookedTicketPageState extends ConsumerState<BookedTicketPage> {
           title: const Text("Lịch sử vé", style: tilteStyleApp),
           backgroundColor: Colors.transparent,
           iconTheme: IconThemeData(color: colorTextApp),
+          centerTitle: false,
         ),
         backgroundColor: bgColorApp,
         body: Stack(
@@ -506,9 +532,11 @@ class _BookedTicketPageState extends ConsumerState<BookedTicketPage> {
         ),
       );
     } else {
-      if (stateHoldingSeat.isLoading || stateOrderWithTicket.isLoading) {
+      if (stateHoldingSeat.isLoading ||
+          stateOrderWithTicket.isLoading ||
+          paymentMethod.isLoading) {
         return buildLoadingScreen();
-      } else if (stateHoldingSeat.hasError || stateOrderWithTicket.hasError) {
+      } else if (stateHoldingSeat.hasError) {
         return buildErrorScreen(
           stateHoldingSeat.error,
           stateHoldingSeat.stackTrace,
@@ -519,14 +547,24 @@ class _BookedTicketPageState extends ConsumerState<BookedTicketPage> {
       } else if (stateOrderWithTicket.hasError) {
         return buildErrorScreen(
           stateOrderWithTicket.error,
-          stateHoldingSeat.stackTrace,
+          stateOrderWithTicket.stackTrace,
           () async =>
               await ref.read(getOrderWithTicketIdUser.notifier).loadTicket(),
+        );
+      } else if (paymentMethod.hasError) {
+        return buildErrorScreen(
+          paymentMethod.error,
+          paymentMethod.stackTrace,
+          () async => await ref
+              .read(paymentMethodNotifierProvider.notifier)
+              .loadPaymentMethod(),
         );
       }
 
       final holdingSeatUserAndDiff = stateHoldingSeat.value;
       final dataOrderWithTicket = stateOrderWithTicket.value;
+      final paymentMethodState = paymentMethod.value;
+      holdingSeatUser = stateHoldingSeat.value;
 
       return Scaffold(
         extendBodyBehindAppBar: true,
@@ -550,13 +588,18 @@ class _BookedTicketPageState extends ConsumerState<BookedTicketPage> {
                   await ref
                       .read(getOrderWithTicketIdUser.notifier)
                       .loadTicket();
-
                 },
                 child: ListView(
                   physics: const AlwaysScrollableScrollPhysics(),
                   children: [
-                    if (holdingSeatUserAndDiff?.holdingSeat != null)
-                      buildItem(holdingSeatUserAndDiff),
+                    if (holdingSeatUserAndDiff?.holdingSeat != null &&
+                        dataOrderWithTicket!.every(
+                          (o) => o.order.expiredAt == null,
+                        ))
+                      buildItem(
+                        holdingSeatUserAndDiff,
+                        paymentMethodState ?? [],
+                      ),
                     if (dataOrderWithTicket == null)
                       SizedBox(
                         height: MediaQuery.of(context).size.height / 2,
@@ -573,7 +616,9 @@ class _BookedTicketPageState extends ConsumerState<BookedTicketPage> {
                         ),
                       )
                     else
-                      ...dataOrderWithTicket.map((t) => buildItem(t)),
+                      ...dataOrderWithTicket.map(
+                        (t) => buildItem(t, paymentMethodState ?? []),
+                      ),
                   ],
                 ),
               ),

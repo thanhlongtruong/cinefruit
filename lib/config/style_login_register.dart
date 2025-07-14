@@ -62,8 +62,6 @@ textNoteBottomStyle(Color color) {
   );
 }
 
-
-
 Widget buildFeld(
   String? type,
   String title,
@@ -87,15 +85,15 @@ Widget buildFeld(
         hintStyle: hintStyle,
       ),
       onTap: () {
+        type == "date" ? () => showDatePicker(context!, controller) : null;
         if (typeFunc == "update") {
           showSnackbar(
             title: "Cập nhật",
-            message: "Không thể thay đổi $title.",
-            type: "success",
+            message: "Không thể thay đổi thông tin này",
+            type: "error",
           );
           return;
         }
-        type == "date" ? () => showDatePicker(context!, controller) : null;
       },
       style: TextStyle(
         color: hexColorTextBlack,
@@ -146,4 +144,3 @@ void showDatePicker(BuildContext context, TextEditingController controller) {
     },
   ).show(context);
 }
-

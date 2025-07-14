@@ -17,6 +17,7 @@ import 'package:ceni_fruit/model/room.dart';
 import 'package:ceni_fruit/pages/pay_page.dart';
 import 'package:ceni_fruit/provider/food_drink_provider.dart';
 import 'package:ceni_fruit/provider/payment_method_provider.dart';
+import 'package:ceni_fruit/service/currency_exchange_service.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -29,7 +30,7 @@ class OrderFoodDrink extends ConsumerStatefulWidget {
   final Room room;
   final MovieRoom movieRoom;
   final List<String> selectedSeats;
-  final double price;
+  final String price;
   final String time;
   final HoldingSeat? seatUser;
 
@@ -52,7 +53,7 @@ class OrderFoodDrink extends ConsumerStatefulWidget {
 class _OrderFoodDrinkState extends ConsumerState<OrderFoodDrink> {
   late HoldingSeat? seatUser;
   int currentSegment = 0;
-  double newPrice = 0;
+  String newPrice = "";
   @override
   void initState() {
     super.initState();
@@ -98,7 +99,10 @@ class _OrderFoodDrinkState extends ConsumerState<OrderFoodDrink> {
       } else if (foodDrink.type == "Giải khát") {
         selectedDrinks.add(foodDrink);
       }
-      newPrice += double.parse(foodDrink.price!);
+
+      newPrice = formatCurrencyVND(
+        currencyVND(newPrice) + currencyVND(foodDrink.price!),
+      );
     } else if (type == "decrease") {
       if (!typeFoodDrink.contains(foodDrink.type)) {
         return;
@@ -113,8 +117,8 @@ class _OrderFoodDrinkState extends ConsumerState<OrderFoodDrink> {
       }
 
       if (stateRemove) {
-        newPrice = double.parse(
-          (newPrice - double.parse(foodDrink.price!)).toStringAsFixed(2),
+        newPrice = formatCurrencyVND(
+          currencyVND(newPrice) - currencyVND(foodDrink.price!),
         );
       }
     }
@@ -131,6 +135,7 @@ class _OrderFoodDrinkState extends ConsumerState<OrderFoodDrink> {
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
       ),
+      centerTitle: false,
       bottom: seatUser != null && time != null
           ? PreferredSize(
               preferredSize: Size.fromHeight(11),
@@ -236,7 +241,7 @@ class _OrderFoodDrinkState extends ConsumerState<OrderFoodDrink> {
                               ),
                             ),
                             Text(
-                              "${typeCombo[index].price} VND",
+                              "${typeCombo[index].price}",
                               style: const TextStyle(
                                 fontSize: textfontSizeApp,
                                 color: colorTextApp,
@@ -484,7 +489,7 @@ class _OrderFoodDrinkState extends ConsumerState<OrderFoodDrink> {
         spacing: spacingSmall,
         children: [
           Text(
-            "Tiền vé: ${widget.movie.price} VND x ${widget.selectedSeats.length}",
+            "Tiền vé: ${widget.price} x ${widget.selectedSeats.length}",
             style: const TextStyle(
               fontSize: textfontSizeNote,
               fontWeight: fontWeightNormal,
@@ -514,7 +519,7 @@ class _OrderFoodDrinkState extends ConsumerState<OrderFoodDrink> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: List.generate(groupedPopcorns.length, (index) {
                 return Text(
-                  "${(groupedPopcorns[index]["foodDrink"] as FoodDrink).name} - ${(groupedPopcorns[index]["foodDrink"] as FoodDrink).price} VND x ${groupedPopcorns[index]["count"]}",
+                  "${(groupedPopcorns[index]["id"] as FoodDrink).name} - ${(groupedPopcorns[index]["id"] as FoodDrink).price} VND x ${groupedPopcorns[index]["quantity"]}",
                   style: const TextStyle(
                     fontSize: textfontSizeNote,
                     fontWeight: fontWeightNormal,
@@ -530,7 +535,7 @@ class _OrderFoodDrinkState extends ConsumerState<OrderFoodDrink> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: List.generate(groupedDrinks.length, (index) {
                 return Text(
-                  "${(groupedDrinks[index]["foodDrink"] as FoodDrink).name} - ${(groupedDrinks[index]["foodDrink"] as FoodDrink).price} VND x ${groupedDrinks[index]["count"]}",
+                  "${(groupedDrinks[index]["id"] as FoodDrink).name} - ${(groupedDrinks[index]["id"] as FoodDrink).price} VND x ${groupedDrinks[index]["quantity"]}",
                   style: const TextStyle(
                     fontSize: textfontSizeNote,
                     fontWeight: fontWeightNormal,
@@ -557,7 +562,7 @@ class _OrderFoodDrinkState extends ConsumerState<OrderFoodDrink> {
                       ),
                       children: <TextSpan>[
                         TextSpan(
-                          text: "$newPrice VND",
+                          text: newPrice,
                           style: TextStyle(
                             fontSize: textfontSizeApp,
                             fontWeight: fontWeightMedium,

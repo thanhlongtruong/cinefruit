@@ -14,6 +14,7 @@ import 'package:ceni_fruit/model/holding_seat.dart';
 import 'package:ceni_fruit/pages/order_food_drink.dart';
 import 'package:ceni_fruit/provider/holding_seat_provider.dart';
 import 'package:ceni_fruit/provider/order_provider.dart';
+import 'package:ceni_fruit/service/currency_exchange_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
@@ -52,7 +53,7 @@ class _BookingPageState extends ConsumerState<BookingPage> {
   List<String> selectedSeats = [];
 
   String? selectedTime;
-  double price = 0;
+  String price = "";
 
   @override
   void initState() {
@@ -65,9 +66,8 @@ class _BookingPageState extends ConsumerState<BookingPage> {
     selectedSeats = seatUser?.selectedSeat ?? [];
     seatsDiff = widget.seatsDiff;
     booked = widget.booked;
-    price = double.parse(
-      ((double.parse(widget.movie.price!)) * selectedSeats.length)
-          .toStringAsFixed(2),
+    price = formatCurrencyVND(
+      currencyVND(widget.movie.price!) * selectedSeats.length,
     );
   }
 
@@ -158,10 +158,10 @@ class _BookingPageState extends ConsumerState<BookingPage> {
                             seatUser = null;
                             selectedSeats = [];
                             seatsDiff = [];
-                            price = double.parse(
-                              ((double.parse(widget.movie.price!)) *
-                                      selectedSeats.length)
-                                  .toStringAsFixed(2),
+
+                            price = formatCurrencyVND(
+                              currencyVND(widget.movie.price!) *
+                                  selectedSeats.length,
                             );
                           });
                         } catch (error) {
@@ -210,7 +210,7 @@ class _BookingPageState extends ConsumerState<BookingPage> {
                         children: [
                           buildLegend(),
                           const SizedBox(height: spacingMedium),
-                          if (price > 0) buildShowSelectingSeat(),
+                          if (currencyVND(price) > 0) buildShowSelectingSeat(),
                           buildPrice(),
                         ],
                       ),
@@ -441,7 +441,7 @@ class _BookingPageState extends ConsumerState<BookingPage> {
                                       widget.movie.idMovie!,
                                     );
 
-                                    await ref
+                                await ref
                                     .read(holdingSeatNofierProvider.notifier)
                                     .getHoldingSeatUser();
 
@@ -454,12 +454,14 @@ class _BookingPageState extends ConsumerState<BookingPage> {
                                     seatUser = null;
                                     selectedSeats = [];
                                     seatsDiff = [];
-                                    price = double.parse(
-                                      ((double.parse(widget.movie.price!)) *
-                                              selectedSeats.length)
-                                          .toStringAsFixed(2),
+                                    price = formatCurrencyVND(
+                                      currencyVND(widget.movie.price!) *
+                                          selectedSeats.length,
                                     );
                                   });
+                                  await ref
+                                      .read(getOrderWithTicketIdUser.notifier)
+                                      .loadTicket();
                                   return;
                                 }
 
@@ -494,10 +496,9 @@ class _BookingPageState extends ConsumerState<BookingPage> {
                                       (dataBooked["data"]["booked"] as List)
                                           .map((s) => s.toString())
                                           .toList();
-                                  price = double.parse(
-                                    ((double.parse(widget.movie.price!)) *
-                                            selectedSeats.length)
-                                        .toStringAsFixed(2),
+                                  price = formatCurrencyVND(
+                                    currencyVND(widget.movie.price!) *
+                                        selectedSeats.length,
                                   );
                                 });
                               } catch (error) {
@@ -637,7 +638,7 @@ class _BookingPageState extends ConsumerState<BookingPage> {
   }
 
   Widget buildPrice() {
-    final bool selectedState = price > 0;
+    final bool selectedState = currencyVND(price) > 0;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -645,7 +646,7 @@ class _BookingPageState extends ConsumerState<BookingPage> {
           children: [
             if (selectedState)
               Text(
-                "$price VND",
+                price,
                 style: const TextStyle(
                   color: Colors.orange,
                   fontSize: textfontSizeTitleAppBar,
@@ -656,7 +657,7 @@ class _BookingPageState extends ConsumerState<BookingPage> {
         ),
         ElevatedButton(
           onPressed: () {
-            if (price > 0 && selectedSeats.isNotEmpty) {
+            if (currencyVND(price) > 0 && selectedSeats.isNotEmpty) {
               Navigator.push(
                 context,
                 MaterialPageRoute(

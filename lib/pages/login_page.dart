@@ -1,5 +1,6 @@
 import 'package:ceni_fruit/config/const.dart';
 import 'package:ceni_fruit/config/show_snack_bar.dart';
+import 'package:ceni_fruit/pages/verify_email_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -159,14 +160,28 @@ class _LoginPageState extends ConsumerState<LoginPage> {
 
                         if (dataLogin["statusCode"] != null &&
                             dataLogin["statusCode"] == 200) {
-                          showSnackbar(
-                            message: dataLogin["message"],
-                            title: "Đăng nhập",
-                            type: "success",
-                          );
+                          if (dataLogin["data"]["user"]["verification"] ==
+                              false) {
+                            await ref
+                                .read(userHandleProvider.notifier)
+                                .logout();
+                            navigator.push(
+                              MaterialPageRoute(
+                                builder: (_) => VerifyEmailPage(
+                                  email: dataLogin["data"]["user"]["email"],
+                                ),
+                              ),
+                            );
+                          } else {
+                            showSnackbar(
+                              message: dataLogin["message"],
+                              title: "Đăng nhập",
+                              type: "success",
+                            );
 
-                          await Future.delayed(const Duration(seconds: 1));
-                          if (mounted) {
+                            await Future.delayed(
+                              const Duration(milliseconds: 500),
+                            );
                             navigator.pushAndRemoveUntil(
                               MaterialPageRoute(builder: (_) => HomeCreen()),
                               (route) => false,

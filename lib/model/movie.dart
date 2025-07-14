@@ -1,13 +1,14 @@
-  class Movie {
+class Movie {
   String? idMovie;
   String? name;
   String? urlImage;
   String? description;
   String? video;
   String? releaseDate;
-  double? rate;
+  dynamic rate;
+  int? rateCount;
   String? price;
-  String? duration;
+  int? duration;
 
   Movie({
     required this.idMovie,
@@ -17,6 +18,7 @@
     required this.video,
     required this.releaseDate,
     required this.rate,
+    required this.rateCount,
     required this.price,
     required this.duration,
   });
@@ -29,6 +31,7 @@
     video = json["video"];
     releaseDate = json["releaseDate"];
     rate = json["rate"];
+    rateCount = json["rate_count"];
     price = json["price"];
     duration = json["duration"];
   }
@@ -41,6 +44,7 @@
     data["video"] = video;
     data["releaseDate"] = releaseDate;
     data["rate"] = rate;
+    data["rate_count"] = rateCount;
     data["price"] = price;
     data["duration"] = duration;
     return data;

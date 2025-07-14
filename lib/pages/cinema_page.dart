@@ -91,7 +91,7 @@ class _CinemaPageState extends ConsumerState<CinemaPage> {
             barrierDismissible: false,
           );
 
-          final dateNow = DateTime.now();
+          final dateNow = DateTime.now().add(const Duration(days: 1));
           final dateFormat = DateFormat("dd/MM/yyyy");
 
           final params = DetailCinemaParams(

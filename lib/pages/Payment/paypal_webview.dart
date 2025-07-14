@@ -1,16 +1,21 @@
+import 'package:ceni_fruit/config/const.dart';
+import 'package:ceni_fruit/config/show_snack_bar.dart';
+import 'package:ceni_fruit/provider/paypal_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:get/get.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
-class PayPalWebView extends StatefulWidget {
+class PayPalWebView extends ConsumerStatefulWidget {
   final String approvalUrl;
 
   const PayPalWebView({super.key, required this.approvalUrl});
 
   @override
-  State<PayPalWebView> createState() => _PayPalWebViewState();
+  ConsumerState<PayPalWebView> createState() => _PayPalWebViewState();
 }
 
-class _PayPalWebViewState extends State<PayPalWebView> {
+class _PayPalWebViewState extends ConsumerState<PayPalWebView> {
   bool _isLoading = true;
   late final WebViewController _controller;
 
@@ -23,27 +28,31 @@ class _PayPalWebViewState extends State<PayPalWebView> {
         NavigationDelegate(
           onNavigationRequest: (NavigationRequest request) {
             final url = request.url;
+            final navigator = Navigator.of(context);
+            try {
+              if (url.contains('http://localhost:2020/pay/success')) {
+                final uri = Uri.parse(url);
+                String orderId = uri.queryParameters['orderId']!;
+                String token = uri.queryParameters['token']!;
 
-            if (url.contains('http://localhost:2020/pay/success')) {
-              // ✅ Thanh toán thành công → parse orderId và token nếu cần
-              final uri = Uri.parse(url);
-              final orderId = uri.queryParameters['orderId'];
-              final token = uri.queryParameters['token'];
-              
-              print(orderId);
-              // Bạn có thể gọi API xác nhận ở đây nếu muốn
-              // await http.get('yourserver.com/pay/success?orderId=...&token=...');
+                navigator.pop({
+                  'status': 'success',
+                  'orderId': orderId,
+                  "token": token,
+                });
+                return NavigationDecision.prevent;
+              }
 
-              Navigator.pop(context, 'success');
+              if (url.contains('http://localhost:2020/pay/cancel')) {
+                Navigator.pop(context, {"status": "cancel"});
+                return NavigationDecision.prevent;
+              }
+
+              return NavigationDecision.navigate;
+            } catch (error) {
+              navigator.pop({'status': 'fail', "error": error.toString()});
               return NavigationDecision.prevent;
             }
-
-            if (url.contains('http://localhost:2020/pay/cancel')) {
-              Navigator.pop(context, 'cancel');
-              return NavigationDecision.prevent;
-            }
-
-            return NavigationDecision.navigate;
           },
           onPageStarted: (_) => setState(() => _isLoading = true),
           onPageFinished: (_) => setState(() => _isLoading = false),
@@ -58,6 +67,13 @@ class _PayPalWebViewState extends State<PayPalWebView> {
       appBar: AppBar(
         title: const Text('Thanh toán PayPal'),
         backgroundColor: Colors.white,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back),
+          onPressed: () {
+            Navigator.pop(context, {"status": "cancel"});
+          },
+        ),
+        centerTitle: false,
       ),
       body: Stack(
         children: [

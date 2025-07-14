@@ -1,6 +1,7 @@
 import 'dart:convert';
 
 import 'package:ceni_fruit/model/user.dart';
+import 'package:ceni_fruit/service/catch_dio_exception.dart';
 import 'package:dio/dio.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -197,5 +198,54 @@ class UserService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove("accessToken");
     await prefs.remove("user");
+  }
+
+  Future<Map<String, dynamic>> sendVerificationEmail(String email) async {
+    try {
+      final response = await dio.post(
+        "/user/verificarion-email",
+        data: {"email": email},
+      );
+
+      return {
+        "success": response.statusCode == 200,
+        "message": response.data["message"],
+        "data": response.statusCode == 200 ? response.data : null,
+      };
+    } on DioException catch (error) {
+      String errorMessage = getDioErrorMessage(error);
+
+      return {"success": false, "message": errorMessage, "data": null};
+    } catch (e) {
+      return {
+        "success": false,
+        "message": "Lỗi không xác định: ${e.toString()}",
+        "data": null,
+      };
+    }
+  }
+  Future<Map<String, dynamic>> updateVerificationEmail(String email) async {
+    try {
+      final response = await dio.post(
+        "/user/update/verification",
+        data: {"email": email},
+      );
+
+      return {
+        "success": response.statusCode == 200,
+        "message": response.data["message"],
+        "data": response.statusCode == 200 ? response.data : null,
+      };
+    } on DioException catch (error) {
+      String errorMessage = getDioErrorMessage(error);
+
+      return {"success": false, "message": errorMessage, "data": null};
+    } catch (e) {
+      return {
+        "success": false,
+        "message": "Lỗi không xác định: ${e.toString()}",
+        "data": null,
+      };
+    }
   }
 }

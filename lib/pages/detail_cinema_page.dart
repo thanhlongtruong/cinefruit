@@ -4,7 +4,9 @@ import 'package:ceni_fruit/config/style_button.dart';
 import 'package:ceni_fruit/home_creen.dart';
 import 'package:ceni_fruit/pages/login_page.dart';
 import 'package:ceni_fruit/provider/holding_seat_provider.dart';
+import 'package:ceni_fruit/provider/movie_provider.dart';
 import 'package:ceni_fruit/provider/order_provider.dart';
+import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:get/get.dart';
 import 'package:ceni_fruit/config/const.dart';
 import 'package:ceni_fruit/pages/booking_page.dart';
@@ -36,11 +38,14 @@ class DetailCinemaPage extends ConsumerStatefulWidget {
 
 class _DetailCinemaPageState extends ConsumerState<DetailCinemaPage> {
   int selectedDate = 0;
-  DateTime date = DateTime.now();
+  DateTime date = DateUtils.dateOnly(
+    DateTime.now().add(const Duration(days: 1)),
+  );
 
   late List<DetailCinemaState> detailCinemaState;
 
   late DetailCinemaParams params;
+  double score = 0;
   @override
   void initState() {
     super.initState();
@@ -63,6 +68,7 @@ class _DetailCinemaPageState extends ConsumerState<DetailCinemaPage> {
 
     await ref.read(detailCinemaProvider(params).notifier).loadDetailCinema();
     final state = ref.read(detailCinemaProvider(params));
+
     if (Get.isDialogOpen == true) {
       Get.back();
     }
@@ -189,11 +195,209 @@ class _DetailCinemaPageState extends ConsumerState<DetailCinemaPage> {
                                     '${detailCinemaState.movie.rate} /10',
                                     style: style,
                                   ),
+                                  if (detailCinemaState.movie.rateCount! > 0)
+                                    Text(
+                                      "(${detailCinemaState.movie.rateCount})",
+                                      style: style,
+                                    ),
                                 ],
                               ),
 
                               GestureDetector(
-                                onTap: () {},
+                                onTap: () {
+                                  Get.dialog(
+                                    StatefulBuilder(
+                                      builder: (context, setState) {
+                                        return AlertDialog(
+                                          backgroundColor: Colors.white,
+
+                                          insetPadding: EdgeInsets.all(
+                                            spacingMedium,
+                                          ),
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: borderRadiusCardSmall,
+                                          ),
+
+                                          title: RichText(
+                                            text: TextSpan(
+                                              style: TextStyle(
+                                                fontWeight: fontWeightSemiBold,
+                                                color: hexColorTextBlack,
+                                                letterSpacing:
+                                                    letterSpacingSmall,
+                                                fontSize:
+                                                    textfontSizeTitleAppBar,
+                                              ),
+                                              children: [
+                                                TextSpan(
+                                                  text:
+                                                      "${detailCinemaState.movie.name} ",
+                                                ),
+                                                TextSpan(
+                                                  text: "($score/10)",
+                                                  style: styleTextSpecial,
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                          titlePadding: const EdgeInsets.all(
+                                            spacingMedium,
+                                          ),
+                                          contentPadding: const EdgeInsets.only(
+                                            right: spacingMedium,
+                                            left: spacingMedium,
+                                            bottom: spacingMedium,
+                                          ),
+                                          buttonPadding: const EdgeInsets.all(
+                                            spacingMedium,
+                                          ),
+                                          content: RatingBar.builder(
+                                            minRating: 0,
+                                            maxRating: 10,
+                                            itemCount: 10,
+                                            allowHalfRating: true,
+                                            wrapAlignment: WrapAlignment.center,
+                                            itemSize: 30,
+                                            itemBuilder: (context, index) =>
+                                                const Icon(
+                                                  Icons.star_rounded,
+                                                  color: colorIcon,
+                                                ),
+                                            onRatingUpdate: (value) {
+                                              setState(() {
+                                                score = value;
+                                              });
+                                            },
+                                          ),
+                                          actions: [
+                                            ElevatedButton(
+                                              onPressed: () => Get.back(),
+                                              style: ButtonStyle(
+                                                backgroundColor:
+                                                    WidgetStatePropertyAll(
+                                                      hexColorLogout,
+                                                    ),
+                                                shape: WidgetStatePropertyAll(
+                                                  RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        borderRadiusButton,
+                                                  ),
+                                                ),
+                                              ),
+                                              child: Text("HỦY", style: style),
+                                            ),
+                                            ElevatedButton(
+                                              onPressed: () async {
+                                                try {
+                                                  Get.back();
+                                                  final navigator =
+                                                      Navigator.of(context);
+
+                                                  Get.dialog(
+                                                    Center(
+                                                      child: circularProgress,
+                                                    ),
+                                                    barrierDismissible: false,
+                                                  );
+
+                                                  final movieRoom =
+                                                      detailCinemaState
+                                                          .movieRooms
+                                                          .firstWhere(
+                                                            (mr) =>
+                                                                mr.idMovie ==
+                                                                detailCinemaState
+                                                                    .movie
+                                                                    .idMovie,
+                                                          );
+                                                  final resultRatingMovie =
+                                                      await ref
+                                                          .read(
+                                                            movieServiceProvider,
+                                                          )
+                                                          .ratingMovie(
+                                                            movieRoom
+                                                                .idMovieRoom!,
+                                                            score,
+                                                          );
+
+                                                  if (Get.isDialogOpen ==
+                                                      true) {
+                                                    Get.back();
+                                                  }
+
+                                                  if (!resultRatingMovie["success"]) {
+                                                    showSnackbar(
+                                                      title: "Đánh giá phim",
+                                                      message:
+                                                          resultRatingMovie["message"],
+                                                      type: "error",
+                                                      func: () async {
+                                                        if (resultRatingMovie
+                                                                .containsKey(
+                                                                  "typeError",
+                                                                ) &&
+                                                            resultRatingMovie["typeError"] ==
+                                                                "Chưa được xác minh") {
+                                                          navigator.push(
+                                                            MaterialPageRoute(
+                                                              builder: (_) =>
+                                                                  LoginPage(),
+                                                            ),
+                                                          );
+                                                        }
+                                                      },
+                                                    );
+                                                    return;
+                                                  }
+                                                  await getMovieDate();
+                                                  showSnackbar(
+                                                    title: "Đánh giá phim",
+                                                    message:
+                                                        resultRatingMovie["message"],
+                                                    type: "success",
+                                                  );
+                                                } catch (error) {
+                                                  if (Get.isDialogOpen ==
+                                                      true) {
+                                                    Get.back();
+                                                  }
+
+                                                  showSnackbar(
+                                                    title: "Lỗi hệ thống",
+                                                    message: "$error",
+                                                    type: "error",
+                                                  );
+                                                }
+                                              },
+                                              style: ButtonStyle(
+                                                backgroundColor:
+                                                    WidgetStatePropertyAll(
+                                                      colorTextSuccess,
+                                                    ),
+                                                shape: WidgetStatePropertyAll(
+                                                  RoundedRectangleBorder(
+                                                    borderRadius:
+                                                        borderRadiusButton,
+                                                  ),
+                                                ),
+                                              ),
+
+                                              child: Text(
+                                                "XÁC NHẬN",
+                                                style: style,
+                                              ),
+                                            ),
+                                          ],
+                                        );
+                                      },
+                                    ),
+                                  ).then((value) {
+                                    setState(() {
+                                      score = 0;
+                                    });
+                                  });
+                                },
                                 child: Text(
                                   'Đánh giá',
                                   style: styleTextSpecial,
@@ -251,16 +455,9 @@ class _DetailCinemaPageState extends ConsumerState<DetailCinemaPage> {
                             } else if (data.containsKey("typeError") &&
                                 data["typeError"] == "conflitRoom") {
                               try {
-                                // Get.dialog(
-                                //   Center(child: circularProgress),
-                                //   barrierDismissible: false,
-                                // );
                                 await ref
                                     .read(getOrderWithTicketIdUser.notifier)
                                     .loadTicket();
-                                // if (Get.isDialogOpen == true) {
-                                //   Get.back();
-                                // }
 
                                 navigator.push(
                                   MaterialPageRoute(
@@ -268,9 +465,6 @@ class _DetailCinemaPageState extends ConsumerState<DetailCinemaPage> {
                                   ),
                                 );
                               } catch (error) {
-                                // if (Get.isDialogOpen == true) {
-                                //   Get.back();
-                                // }
                                 showSnackbar(
                                   title: "Lỗi hệ thống",
                                   message: "$error",
@@ -350,6 +544,7 @@ class _DetailCinemaPageState extends ConsumerState<DetailCinemaPage> {
         maxLines: 2,
         overflow: TextOverflow.ellipsis,
       ),
+      centerTitle: false,
     );
   }
 

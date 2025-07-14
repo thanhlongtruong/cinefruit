@@ -4,6 +4,7 @@ import 'package:ceni_fruit/config/show_snack_bar.dart';
 import 'package:ceni_fruit/config/styles.dart';
 import 'package:ceni_fruit/config/style_login_register.dart';
 import 'package:ceni_fruit/pages/login_page.dart';
+import 'package:ceni_fruit/pages/verify_email_page.dart';
 import 'package:ceni_fruit/provider/user_handle_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -126,6 +127,8 @@ class _SignUpCreenState extends ConsumerState<SignUpCreen> {
                           alignment: Alignment.centerRight,
                           child: ElevatedButton(
                             onPressed: () async {
+                              final navigator = Navigator.of(context);
+
                               final name = nameController.text;
                               final birthday = birthdayController.text;
                               final email = emailController.text;
@@ -160,6 +163,12 @@ class _SignUpCreenState extends ConsumerState<SignUpCreen> {
                                       result["message"] ??
                                       "Đăng ký thành công.",
                                   type: "success",
+                                );
+                                navigator.push(
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        VerifyEmailPage(email: email),
+                                  ),
                                 );
                               } else {
                                 showSnackbar(

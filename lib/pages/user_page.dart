@@ -43,11 +43,16 @@ class _UserPageState extends ConsumerState<UserPage> {
   List<Widget> loggedined(User? user) {
     return [
       Padding(
-        padding: const EdgeInsets.only(top: spacingBig, bottom: 70),
+        padding: const EdgeInsets.only(
+          top: spacingBig,
+          bottom: 70,
+          right: spacingMedium,
+          left: spacingMedium,
+        ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.center,
-          mainAxisAlignment: MainAxisAlignment.center,
-          spacing: spacingBig,
+          mainAxisAlignment: MainAxisAlignment.start,
+          spacing: spacingMedium,
           children: [
             GestureDetector(
               // onTap: pickImage,
@@ -110,10 +115,10 @@ class _UserPageState extends ConsumerState<UserPage> {
                         color: colorTextApp,
                       ),
                       Text(
-                        "Chỉnh sửa thông tin",
+                        "Chỉnh sửa",
                         style: TextStyle(
                           color: colorTextApp,
-                          fontSize: textfontSizeNote,
+                          fontSize: textfontSizeApp,
                           letterSpacing: letterSpacingSmall,
                           fontWeight: fontWeightNormal,
                         ),

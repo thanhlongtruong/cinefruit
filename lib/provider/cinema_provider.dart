@@ -68,7 +68,7 @@ final detailCinemaProvider =
     });
 
 class DetailCinemaState {
-  final Cinema cinema;
+  final Cinema? cinema;
   final List<MovieRoom> movieRooms;
   final Movie movie;
   final List<Room> rooms;

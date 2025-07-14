@@ -47,7 +47,7 @@ class _MoviePageState extends ConsumerState<MoviePage> {
             barrierDismissible: false,
           );
 
-          final dateNow = DateTime.now();
+          final dateNow = DateTime.now().add(const Duration(days: 1));
           final dateFormat = DateFormat("dd/MM/yyyy");
 
           final params = GetMovieParams(
@@ -60,7 +60,6 @@ class _MoviePageState extends ConsumerState<MoviePage> {
               .loadMovieRoomIdMovie();
 
           final state = ref.read(movieRoomProvider(params));
-
           if (Get.isDialogOpen == true) {
             Get.back();
           }
@@ -198,6 +197,7 @@ class _MoviePageState extends ConsumerState<MoviePage> {
                       title: const Text("Danh sách phim", style: tilteStyleApp),
                       backgroundColor: Colors.transparent,
                       elevation: 0,
+                      centerTitle: false,
                       bottom: buildSearch(),
                     ),
 

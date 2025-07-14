@@ -28,6 +28,28 @@ class OrderService {
     }
   }
 
+  Future<Map<String, dynamic>> delOrderWithTicket(String idOrder) async {
+    try {
+      final response = await dio.post("/order/del", data: {"idOrder": idOrder});
+
+      return {
+        "success": response.statusCode == 200,
+        "message": response.data["message"],
+        "data": response.statusCode == 200 ? response.data : null,
+      };
+    } on DioException catch (error) {
+      String errorMessage = getDioErrorMessage(error);
+
+      return {"success": false, "message": errorMessage, "data": null};
+    } catch (e) {
+      return {
+        "success": false,
+        "message": "Lỗi không xác định: ${e.toString()}",
+        "data": null,
+      };
+    }
+  }
+
   Future<Map<String, dynamic>> getBooked(String idRoom, String idMovie) async {
     try {
       final response = await dio.get(

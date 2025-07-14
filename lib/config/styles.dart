@@ -12,7 +12,7 @@ const double textfontSizeApp = 19;
 
 const double iconfontSizeCardBig = 90;
 const double iconfontSizeCardMedium = 60;
-const double iconfontSizeNormal = 23;
+const double iconfontSizeNormal = 24;
 const double iconfontSizeTiny = 10;
 
 const Color colorIcon = Colors.amberAccent;
