@@ -75,7 +75,7 @@ Widget buildFeld(
     decoration: boxDecoration,
     child: TextFormField(
       controller: controller,
-      readOnly: typeFunc == "update",
+      readOnly: typeFunc == "update" || type == "date",
       autofocus: false,
       decoration: InputDecoration(
         border: InputBorder.none,
@@ -85,7 +85,10 @@ Widget buildFeld(
         hintStyle: hintStyle,
       ),
       onTap: () {
-        type == "date" ? () => showDatePicker(context!, controller) : null;
+        if (type == "date" && context != null) {
+          showDatePicker(context, controller);
+        }
+
         if (typeFunc == "update") {
           showSnackbar(
             title: "Cập nhật",
