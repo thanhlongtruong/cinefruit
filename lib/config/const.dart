@@ -35,7 +35,7 @@ final dioProvider = Provider<Dio>((ref) {
 
   final dio = Dio(
     BaseOptions(
-      baseUrl: baseUrl,
+      baseUrl: backupUrl,
       connectTimeout: Duration(seconds: 60),
       receiveTimeout: Duration(seconds: 60),
     ),
