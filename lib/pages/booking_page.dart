@@ -86,6 +86,7 @@ class _BookingPageState extends ConsumerState<BookingPage> {
   AppBar appBar() {
     final time = convertTime(seatUser?.expiredAt ?? "");
     return AppBar(
+      centerTitle: false,
       title: Text("${widget.cinema.name}", style: tilteStyleApp),
       backgroundColor: Colors.transparent,
       iconTheme: IconThemeData(color: colorTextApp),
@@ -448,8 +449,8 @@ class _BookingPageState extends ConsumerState<BookingPage> {
                                 if (Get.isDialogOpen == true) {
                                   Get.back();
                                 }
-
-                                if (data["data"]["type"] == "deleted") {
+                                if (data.isNotEmpty &&
+                                    data["data"]!["type"] == "deleted") {
                                   setState(() {
                                     seatUser = null;
                                     selectedSeats = [];

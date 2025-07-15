@@ -761,6 +761,7 @@ class _DetailMovieScreenState extends ConsumerState<DetailMovieScreen> {
 
   PreferredSizeWidget buildAppBar() {
     return AppBar(
+      centerTitle: false,
       title: currentSegment == 0
           ? Text(widget.movie.name!, style: tilteStyleApp)
           : null,
@@ -774,9 +775,10 @@ class _DetailMovieScreenState extends ConsumerState<DetailMovieScreen> {
     final slidingSegments = buildSlidingSegments();
 
     return Scaffold(
-      appBar: buildAppBar(),
+      appBar: buildAppBar(),  
       extendBodyBehindAppBar: true,
       backgroundColor: bgColorApp,
+
       body: SizedBox.expand(
         child: Stack(
           fit: StackFit.expand,

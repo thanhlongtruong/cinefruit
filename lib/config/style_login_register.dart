@@ -75,7 +75,7 @@ Widget buildFeld(
     decoration: boxDecoration,
     child: TextFormField(
       controller: controller,
-      readOnly: type == "date" || typeFunc == "update",
+      readOnly: typeFunc == "update",
       autofocus: false,
       decoration: InputDecoration(
         border: InputBorder.none,

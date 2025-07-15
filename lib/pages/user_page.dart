@@ -204,6 +204,7 @@ class _UserPageState extends ConsumerState<UserPage> {
           title: const Text("Tài khoản", style: tilteStyleApp),
           automaticallyImplyLeading: false,
           backgroundColor: Colors.transparent,
+           centerTitle: false,
         ),
         backgroundColor: bgColorApp,
         body: Stack(
