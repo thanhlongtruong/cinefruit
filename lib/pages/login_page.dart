@@ -1,6 +1,9 @@
+import 'package:ceni_fruit/Router/navigation_hepler.dart';
+import 'package:ceni_fruit/Router/routers.dart';
+import 'package:ceni_fruit/config/background_app.dart';
 import 'package:ceni_fruit/config/const.dart';
 import 'package:ceni_fruit/config/show_snack_bar.dart';
-import 'package:ceni_fruit/pages/verify_email_page.dart';
+import 'package:ceni_fruit/provider/movie_hot_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,8 +11,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ceni_fruit/config/styles.dart';
 import 'package:ceni_fruit/config/style_login_register.dart';
 import 'package:ceni_fruit/config/path_images.dart';
-import 'package:ceni_fruit/home_creen.dart';
-import 'package:ceni_fruit/pages/sign_up_page.dart';
 import 'package:ceni_fruit/provider/user_handle_provider.dart';
 import 'package:get/get.dart';
 
@@ -23,12 +24,86 @@ class LoginPage extends ConsumerStatefulWidget {
 class _LoginPageState extends ConsumerState<LoginPage> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
-
+  String? returnRoute;
   @override
   void dispose() {
     emailController.dispose();
     passwordController.dispose();
     super.dispose();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    final args = Get.arguments as Map<String, dynamic>?;
+    returnRoute = args?['returnRoute'];
+  }
+
+  Future<void> handleLogin() async {
+    final email = emailController.text;
+    final password = passwordController.text;
+
+    final navigator = Navigator.of(context);
+    try {
+      Get.dialog(Center(child: circularProgress), barrierDismissible: false);
+      final dataLogin = await ref
+          .read(userHandleProvider.notifier)
+          .login(email, password);
+
+      if (navigator.canPop()) {
+        navigator.pop();
+      }
+
+      if (dataLogin["statusCode"] != null && dataLogin["statusCode"] == 200) {
+        if (dataLogin["data"]["user"]["verification"] == false) {
+          await ref.read(userHandleProvider.notifier).logout();
+
+          NavigationHelper.goToVerifyEmail(
+            email: dataLogin["data"]["user"]["email"],
+            returnRoute: returnRoute,
+          );
+        } else {
+          showSnackbar(
+            message: dataLogin["message"],
+            title: "Đăng nhập",
+            type: "success",
+          );
+
+          await Future.delayed(const Duration(milliseconds: 500));
+
+          switch (returnRoute) {
+            case Routers.detailMovie:
+              {
+                NavigationHelper.goBackToSpecificPage(Routers.detailMovie);
+
+                break;
+              }
+            case Routers.detailCinema:
+              {
+                NavigationHelper.goBackToSpecificPage(Routers.detailCinema);
+                break;
+              }
+            default:
+              NavigationHelper.goToHomeAndRemove();
+          }
+        }
+      } else {
+        showSnackbar(
+          message: dataLogin["message"],
+          title: "Đăng nhập",
+          type: "error",
+        );
+      }
+    } catch (e) {
+      if (navigator.canPop()) {
+        navigator.pop();
+      }
+      showSnackbar(
+        title: "Lỗi hệ thống",
+        message: "Có lỗi xảy ra khi đăng nhập: $e",
+        type: "error",
+      );
+    }
   }
 
   @override
@@ -40,37 +115,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
       ),
     );
 
+    final background = ref.read(backgroundMovieHot.notifier).state;
+
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: Stack(
         children: [
-          Positioned(
-            bottom: -107,
-            left: -207,
-            child: Transform.rotate(
-              angle: 37 * 3.141592653589793 / 180,
-              child: Image.asset(
-                logoCinema,
-                width: 830,
-                height: 640,
-                fit: BoxFit.contain,
-              ),
-            ),
-          ),
-
-          Positioned(
-            top: -140,
-            right: -170,
-            child: Transform.rotate(
-              angle: 25 * 3.141592653589793 / 180,
-              child: Image.asset(
-                logoCinema,
-                width: 700,
-                height: 540,
-                fit: BoxFit.contain,
-              ),
-            ),
-          ),
+          if (background.isNotEmpty) ...backgroundApp(background),
 
           Padding(
             padding: const EdgeInsets.only(
@@ -85,13 +136,39 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   spacing: spacingMedium,
                   children: [
                     GestureDetector(
-                      onTap: () => Navigator.pushAndRemoveUntil(
-                        context,
-                        MaterialPageRoute(builder: (_) => HomeCreen()),
-                        (route) => false,
-                      ),
+                      onTap: () {
+                        switch (returnRoute) {
+                          case Routers.detailMovie:
+                            {
+                              NavigationHelper.goBackToSpecificPage(
+                                Routers.detailMovie,
+                              );
+
+                              break;
+                            }
+                          case Routers.detailCinema:
+                            {
+                              NavigationHelper.goBackToSpecificPage(
+                                Routers.detailCinema,
+                              );
+                              break;
+                            }
+                          case Routers.userPage:
+                            {
+                              NavigationHelper.goToHome(index: 3);
+                              break;
+                            }
+                          case Routers.bookedPage:
+                            {
+                              NavigationHelper.goToHome(index: 2);
+                              break;
+                            }
+                          default:
+                            NavigationHelper.goToHomeAndRemove();
+                        }
+                      },
                       child: const Icon(
-                        Icons.arrow_back_ios_rounded,
+                        Icons.arrow_back_rounded,
                         color: colorTextApp,
                         size: iconfontSizeNormal,
                       ),
@@ -121,16 +198,39 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                       Icon(Icons.lock_outline_rounded),
                       null,
                       "",
+                      isPassword: true,
                     ),
                     GestureDetector(
-                      onTap: () {},
+                      onTap: () {
+                        final String email = emailController.text;
+                        if (email.isEmpty) {
+                          showSnackbar(
+                            message: "Phải nhập email",
+                            title: "Email",
+                            type: "error",
+                          );
+                        } else if (!email.contains("@gmail.com") ||
+                            email.split("@").length != 2 ||
+                            email.split("@")[0].length < 3) {
+                          showSnackbar(
+                            message: "Email không hợp lệ",
+                            title: "Email",
+                            type: "error",
+                          );
+                        } else {
+                          NavigationHelper.goToForgotPassword(
+                            email: email,
+                            returnRoute: returnRoute,
+                          );
+                        }
+                      },
                       child: Text(
                         "Quên mật khẩu",
                         style: TextStyle(
                           letterSpacing: letterSpacingSmall,
                           fontWeight: fontWeightMedium,
-                          color: Colors.red,
-                          fontSize: textfontSizeNote,
+                          color: hexColorLogout,
+                          fontSize: textfontSizeApp,
                         ),
                       ),
                     ),
@@ -140,76 +240,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 Align(
                   alignment: Alignment.centerRight,
                   child: ElevatedButton(
-                    onPressed: () async {
-                      final email = emailController.text;
-                      final password = passwordController.text;
-
-                      final navigator = Navigator.of(context);
-                      try {
-                        Get.dialog(
-                          Center(child: circularProgress),
-                          barrierDismissible: false,
-                        );
-                        final dataLogin = await ref
-                            .read(userHandleProvider.notifier)
-                            .login(email, password);
-
-                        if (Get.isDialogOpen == true) {
-                          Get.back();
-                        }
-
-                        if (dataLogin["statusCode"] != null &&
-                            dataLogin["statusCode"] == 200) {
-                          if (dataLogin["data"]["user"]["verification"] ==
-                              false) {
-                            await ref
-                                .read(userHandleProvider.notifier)
-                                .logout();
-                            navigator.push(
-                              MaterialPageRoute(
-                                builder: (_) => VerifyEmailPage(
-                                  email: dataLogin["data"]["user"]["email"],
-                                ),
-                              ),
-                            );
-                          } else {
-                            showSnackbar(
-                              message: dataLogin["message"],
-                              title: "Đăng nhập",
-                              type: "success",
-                            );
-
-                            await Future.delayed(
-                              const Duration(milliseconds: 500),
-                            );
-                            navigator.pushAndRemoveUntil(
-                              MaterialPageRoute(builder: (_) => HomeCreen()),
-                              (route) => false,
-                            );
-                          }
-                        } else {
-                          if (Get.isDialogOpen == true) {
-                            Get.back();
-                          }
-
-                          showSnackbar(
-                            message: dataLogin["message"],
-                            title: "Đăng nhập",
-                            type: "error",
-                          );
-                        }
-                      } catch (e) {
-                        if (Get.isDialogOpen == true) {
-                          Get.back();
-                        }
-
-                        showSnackbar(
-                          title: "Lỗi hệ thống",
-                          message: "Có lỗi xảy ra khi đăng nhập: $e",
-                          type: "error",
-                        );
-                      }
-                    },
+                    onPressed: handleLogin,
                     style: buttonStyle,
 
                     child: Text("Đăng nhập", style: textStyleElevatedButton),
@@ -231,14 +262,11 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                 ),
                 InkWell(
                   onTap: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(builder: (_) => SignUpCreen()),
-                    );
+                    NavigationHelper.goToRegister(returnRoute: returnRoute);
                   },
                   child: Text(
                     "Đăng kí",
-                    style: textNoteBottomStyle(Color(0xfffca148)),
+                    style: textNoteBottomStyle(colorButton),
                   ),
                 ),
               ],

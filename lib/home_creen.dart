@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:ceni_fruit/config/styles.dart';
 import 'package:ceni_fruit/pages/booked_ticket_page.dart';
 import 'package:ceni_fruit/pages/home_page.dart';
@@ -14,68 +16,142 @@ class HomeCreen extends StatefulWidget {
 }
 
 class _HomeCreenState extends State<HomeCreen> {
-  late int index;
+  int indexSelected = 0;
 
   @override
   void initState() {
     super.initState();
-    index = widget.index;
+    indexSelected = widget.index;
+  }
+
+  Widget bottomNavigationBarCustom() {
+    return SizedBox(
+      height: 100,
+      child: Padding(
+        padding: const EdgeInsets.only(
+          top: spacingMedium,
+          right: spacingMedium,
+          left: spacingMedium,
+          bottom: spacingBig,
+        ),
+        child: ClipRRect(
+          borderRadius: borderRadiusCardBig,
+          child: Stack(
+            children: [
+              BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                child: Container(color: Colors.white.withOpacity(0.1)),
+              ),
+              BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                child: Container(color: Colors.white.withOpacity(0.1)),
+              ),
+              BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                child: Container(color: Colors.white.withOpacity(0.1)),
+              ),
+              Center(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    itemBottomNavigationBarCustom(
+                      icon: Icon(
+                        Icons.home_rounded,
+                        size: 25,
+                        color: Colors.white,
+                      ),
+                      itemIndex: 0,
+                    ),
+                    itemBottomNavigationBarCustom(
+                      icon: Icon(
+                        Icons.theaters_rounded,
+                        size: 25,
+                        color: Colors.white,
+                      ),
+                      itemIndex: 1,
+                    ),
+                    itemBottomNavigationBarCustom(
+                      icon: Icon(
+                        Icons.history_rounded,
+                        size: 25,
+                        color: Colors.white,
+                      ),
+                      itemIndex: 2,
+                    ),
+                    itemBottomNavigationBarCustom(
+                      icon: Icon(
+                        Icons.person_rounded,
+                        size: 25,
+                        color: Colors.white,
+                      ),
+                      itemIndex: 3,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget itemBottomNavigationBarCustom({
+    required Icon icon,
+    required int itemIndex,
+  }) {
+    final isSelected = indexSelected == itemIndex;
+
+    return GestureDetector(
+      onTap: () {
+        setState(() {
+          indexSelected = itemIndex;
+        });
+      },
+      child: AnimatedContainer(
+        duration: Duration(milliseconds: 400),
+        curve: Curves.bounceOut,
+        padding: const EdgeInsets.all(3),
+        decoration: isSelected
+            ? BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [Colors.amber, Colors.orange],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.amber.withOpacity(0.8),
+                    blurRadius: 20,
+                    spreadRadius: 3,
+                  ),
+                  BoxShadow(
+                    color: Colors.orange.withOpacity(0.4),
+                    blurRadius: 30,
+                    spreadRadius: 5,
+                  ),
+                ],
+                borderRadius: BorderRadius.circular(15),
+              )
+            : null,
+        width: 70,
+        child: AnimatedContainer(
+          duration: Duration(milliseconds: 200),
+          child: icon,
+        ),
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final creens = [HomePage(), CinemaPage(), BookedTicketPage(), UserPage()];
 
-    final items = <BottomNavigationBarItem>[
-      BottomNavigationBarItem(
-        icon: Icon(Icons.home_rounded, size: 25),
-        label: "Phim",
-      ),
-      BottomNavigationBarItem(
-        icon: Icon(Icons.theaters_rounded, size: 25),
-        label: "Rạp",
-      ),
-      BottomNavigationBarItem(
-        icon: Icon(Icons.history_rounded, size: 25),
-        label: "Lịch sử",
-      ),
-      BottomNavigationBarItem(
-        icon: Icon(Icons.person_rounded, size: 25),
-        label: "Tài khoản",
-      ),
-    ];
-
     return Scaffold(
       extendBody: true,
-      bottomNavigationBar: Container(
-        margin: EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(15),
-          child: Theme(
-            data: Theme.of(context).copyWith(
-              splashFactory: NoSplash.splashFactory,
-              highlightColor: Colors.transparent,
-            ),
-            child: BottomNavigationBar(
-              backgroundColor: Colors.black.withOpacity(0.85),
-              unselectedItemColor: Colors.grey,
-              selectedItemColor: Colors.cyan,
-              items: items,
-              currentIndex: index,
-              type: BottomNavigationBarType.fixed,
-              showUnselectedLabels: false,
-              onTap: (i) => setState(() => index = i),
-              selectedLabelStyle: TextStyle(
-                color: colorTextApp,
-                letterSpacing: letterSpacingSmall,
-                fontWeight: fontWeightNormal,
-                fontSize: textfontSizeNote,
-              ),
-            ),
-          ),
-        ),
-      ),
-      body: creens[index],
+      bottomNavigationBar: bottomNavigationBarCustom(),
+      body: creens[indexSelected],
     );
   }
 }

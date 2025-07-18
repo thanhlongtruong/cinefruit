@@ -56,7 +56,7 @@ final textStyleElevatedButton = TextStyle(
 textNoteBottomStyle(Color color) {
   return TextStyle(
     fontSize: textfontSizeNote,
-    fontWeight: fontWeightNormal,
+    fontWeight: fontWeightMedium,
     color: color,
     letterSpacing: letterSpacingSmall,
   );
@@ -68,42 +68,65 @@ Widget buildFeld(
   TextEditingController controller,
   Icon icon,
   BuildContext? context,
-  String? typeFunc,
-) {
+  String? typeFunc, {
+  bool isPassword = false,
+}) {
+  final ValueNotifier<bool> obscureTextNotifier = ValueNotifier<bool>(
+    isPassword,
+  );
+
   return Container(
     height: height,
     decoration: boxDecoration,
-    child: TextFormField(
-      controller: controller,
-      readOnly: typeFunc == "update" || type == "date",
-      autofocus: false,
-      decoration: InputDecoration(
-        border: InputBorder.none,
-        contentPadding: contentPadding,
-        prefixIcon: icon,
-        hintText: title,
-        hintStyle: hintStyle,
-      ),
-      onTap: () {
-        if (type == "date" && context != null) {
-          showDatePicker(context, controller);
-        }
+    child: ValueListenableBuilder<bool>(
+      valueListenable: obscureTextNotifier,
+      builder: (context, obscureText, child) {
+        return TextFormField(
+          controller: controller,
+          readOnly: typeFunc == "update" || type == "date",
+          autofocus: false,
+          obscureText: obscureText,
+          decoration: InputDecoration(
+            border: InputBorder.none,
+            contentPadding: contentPadding,
+            prefixIcon: icon,
+            hintText: title,
+            hintStyle: hintStyle,
+            suffixIcon: isPassword
+                ? IconButton(
+                    onPressed: () {
+                      obscureTextNotifier.value = !obscureTextNotifier.value;
+                    },
+                    icon: Icon(
+                      obscureText ? Icons.visibility_off : Icons.visibility,
+                      color: hexColorPlaceHolder,
+                      size: 20,
+                    ),
+                  )
+                : null,
+          ),
+          onTap: () {
+            if (type == "date") {
+              showDatePicker(context, controller);
+            }
 
-        if (typeFunc == "update") {
-          showSnackbar(
-            title: "Cập nhật",
-            message: "Không thể thay đổi thông tin này",
-            type: "error",
-          );
-          return;
-        }
+            if (typeFunc == "update") {
+              showSnackbar(
+                title: "Cập nhật",
+                message: "Không thể thay đổi thông tin này",
+                type: "error",
+              );
+              return;
+            }
+          },
+          style: TextStyle(
+            color: hexColorTextBlack,
+            fontSize: textfontSizeApp,
+            fontWeight: fontWeightMedium,
+            letterSpacing: letterSpacingSmall,
+          ),
+        );
       },
-      style: TextStyle(
-        color: hexColorTextBlack,
-        fontSize: textfontSizeApp,
-        fontWeight: fontWeightMedium,
-        letterSpacing: letterSpacingSmall,
-      ),
     ),
   );
 }

@@ -2,7 +2,6 @@ import 'dart:math';
 
 import 'package:ceni_fruit/config/const.dart';
 import 'package:ceni_fruit/service/movie_service.dart';
-import 'package:ceni_fruit/service/is_valid_image_url.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:ceni_fruit/model/movie.dart';
 

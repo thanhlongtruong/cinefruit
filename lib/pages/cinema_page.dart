@@ -1,3 +1,4 @@
+import 'package:ceni_fruit/Router/navigation_hepler.dart';
 import 'package:ceni_fruit/config/background_app.dart';
 import 'package:ceni_fruit/config/const.dart';
 import 'package:ceni_fruit/config/show_snack_bar.dart';
@@ -7,7 +8,6 @@ import 'package:ceni_fruit/config/widget_loading_error.dart';
 import 'package:ceni_fruit/provider/cinema_provider.dart';
 import 'package:ceni_fruit/provider/movie_hot_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:ceni_fruit/pages/detail_cinema_page.dart';
 import 'package:ceni_fruit/model/cinema.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:get/get.dart';
@@ -84,8 +84,8 @@ class _CinemaPageState extends ConsumerState<CinemaPage> {
   Widget buildItem(Cinema cinema) {
     return GestureDetector(
       onTap: () async {
+        final navigator = Navigator.of(context);
         try {
-          final navigator = Navigator.of(context);
           Get.dialog(
             Center(child: circularProgress),
             barrierDismissible: false,
@@ -105,8 +105,8 @@ class _CinemaPageState extends ConsumerState<CinemaPage> {
 
           final state = ref.read(detailCinemaProvider(params));
 
-          if (Get.isDialogOpen == true) {
-            Get.back();
+          if (navigator.canPop()) {
+            navigator.pop();
           }
           if (state.hasError) {
             showSnackbar(
@@ -115,18 +115,14 @@ class _CinemaPageState extends ConsumerState<CinemaPage> {
               type: "error",
             );
           } else {
-            navigator.push(
-              MaterialPageRoute(
-                builder: (_) => DetailCinemaPage(
-                  detailCinemaState: state.value ?? [],
-                  cinema: cinema,
-                ),
-              ),
+            NavigationHelper.goToDetailCinema(
+              cinema: cinema,
+              detailCinemaState: state.value ?? [],
             );
           }
         } catch (error) {
-          if (Get.isDialogOpen == true) {
-            Get.back();
+          if (navigator.canPop()) {
+            navigator.pop();
           }
           showSnackbar(title: "Lỗi hệ thống", message: "$error", type: "error");
         }

@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:ceni_fruit/Router/navigation_hepler.dart';
 import 'package:ceni_fruit/config/background_app.dart';
 import 'package:ceni_fruit/config/catch_network_image.dart';
 import 'package:ceni_fruit/config/const.dart';
@@ -8,13 +9,10 @@ import 'package:ceni_fruit/config/style_login_register.dart';
 import 'package:ceni_fruit/config/styles.dart';
 import 'package:ceni_fruit/config/convert_time.dart';
 import 'package:ceni_fruit/config/widget_loading_error.dart';
-import 'package:ceni_fruit/model/cinema.dart';
 import 'package:ceni_fruit/model/food_drink.dart';
 import 'package:ceni_fruit/model/holding_seat.dart';
-import 'package:ceni_fruit/model/movie.dart';
-import 'package:ceni_fruit/model/movie_room.dart';
-import 'package:ceni_fruit/model/room.dart';
-import 'package:ceni_fruit/pages/pay_page.dart';
+import 'package:ceni_fruit/model/order_food_drink.dart';
+import 'package:ceni_fruit/model/params_pay_page.dart';
 import 'package:ceni_fruit/provider/food_drink_provider.dart';
 import 'package:ceni_fruit/provider/payment_method_provider.dart';
 import 'package:ceni_fruit/service/currency_exchange_service.dart';
@@ -25,26 +23,9 @@ import 'package:get/get.dart';
 import 'package:slide_countdown/slide_countdown.dart';
 
 class OrderFoodDrink extends ConsumerStatefulWidget {
-  final Movie movie;
-  final Cinema cinema;
-  final Room room;
-  final MovieRoom movieRoom;
-  final List<String> selectedSeats;
-  final String price;
-  final String time;
-  final HoldingSeat? seatUser;
+  final ParamsOrderFoodDrink paramsOrderFoodDrink;
 
-  const OrderFoodDrink({
-    super.key,
-    required this.movie,
-    required this.selectedSeats,
-    required this.price,
-    required this.cinema,
-    required this.room,
-    required this.movieRoom,
-    required this.time,
-    required this.seatUser,
-  });
+  const OrderFoodDrink({super.key, required this.paramsOrderFoodDrink});
 
   @override
   ConsumerState<OrderFoodDrink> createState() => _OrderFoodDrinkState();
@@ -57,8 +38,8 @@ class _OrderFoodDrinkState extends ConsumerState<OrderFoodDrink> {
   @override
   void initState() {
     super.initState();
-    seatUser = widget.seatUser;
-    newPrice = widget.price;
+    seatUser = widget.paramsOrderFoodDrink.seatUser;
+    newPrice = widget.paramsOrderFoodDrink.price;
   }
 
   List<Map<String, dynamic>> groupAndCountFoodDrinks(
@@ -182,7 +163,7 @@ class _OrderFoodDrinkState extends ConsumerState<OrderFoodDrink> {
                         setState(() {
                           seatUser = null;
                         });
-                        Navigator.pop(context);
+                        NavigationHelper.goBack();
                       },
                     ),
                   ],
@@ -489,7 +470,7 @@ class _OrderFoodDrinkState extends ConsumerState<OrderFoodDrink> {
         spacing: spacingSmall,
         children: [
           Text(
-            "Tiền vé: ${widget.price} x ${widget.selectedSeats.length}",
+            "Tiền vé: ${widget.paramsOrderFoodDrink.price} x ${widget.paramsOrderFoodDrink.selectedSeats.length}",
             style: const TextStyle(
               fontSize: textfontSizeNote,
               fontWeight: fontWeightNormal,
@@ -576,53 +557,60 @@ class _OrderFoodDrinkState extends ConsumerState<OrderFoodDrink> {
                   ElevatedButton(
                     onPressed: () async {
                       try {
-                        final navigator = Navigator.of(context);
+                        if (seatUser == null) {
+                          showSnackbar(
+                            title: "Ghế",
+                            message:
+                                "Bạn đã hết thời gian giữ ghế. Vui lòng chọn lại ghế.",
+                            type: "error",
+                          );
+                          NavigationHelper.goBack();
+                        } else {
+                          Get.dialog(
+                            Center(child: circularProgress),
+                            barrierDismissible: false,
+                          );
 
-                        Get.dialog(
-                          Center(child: circularProgress),
-                          barrierDismissible: false,
-                        );
+                          final state = await ref
+                              .read(paymentMethodNotifierProvider.notifier)
+                              .loadPaymentMethod();
 
-                        final state = await ref
-                            .read(paymentMethodNotifierProvider.notifier)
-                            .loadPaymentMethod();
+                          var groupedFoods = groupAndCountFoodDrinks(
+                            selectedCombos,
+                          );
+                          var groupedPopcorns = groupAndCountFoodDrinks(
+                            selectedPopcorns,
+                          );
+                          var groupedDrinks = groupAndCountFoodDrinks(
+                            selectedDrinks,
+                          );
 
-                        var groupedFoods = groupAndCountFoodDrinks(
-                          selectedCombos,
-                        );
-                        var groupedPopcorns = groupAndCountFoodDrinks(
-                          selectedPopcorns,
-                        );
-                        var groupedDrinks = groupAndCountFoodDrinks(
-                          selectedDrinks,
-                        );
+                          List<Map<String, dynamic>> totalChooseFoodDrink = [
+                            ...groupedFoods,
+                            ...groupedPopcorns,
+                            ...groupedDrinks,
+                          ];
 
-                        List<Map<String, dynamic>> totalChooseFoodDrink = [
-                          ...groupedFoods,
-                          ...groupedPopcorns,
-                          ...groupedDrinks,
-                        ];
+                          if (Get.isDialogOpen == true) {
+                            Get.back();
+                          }
 
-                        if (Get.isDialogOpen == true) {
-                          Get.back();
+                          ParamsPayPage params = ParamsPayPage(
+                            selectedSeats:
+                                widget.paramsOrderFoodDrink.selectedSeats,
+                            selectedTime: widget.paramsOrderFoodDrink.time,
+                            movie: widget.paramsOrderFoodDrink.movie,
+                            price: newPrice,
+                            cinema: widget.paramsOrderFoodDrink.cinema,
+                            room: widget.paramsOrderFoodDrink.room,
+                            paymentMethods: state,
+                            movieRoom: widget.paramsOrderFoodDrink.movieRoom,
+                            totalChooseFoodDrink: totalChooseFoodDrink,
+                            seatUser: seatUser,
+                          );
+
+                          NavigationHelper.goToPay(params: params);
                         }
-
-                        navigator.push(
-                          MaterialPageRoute(
-                            builder: (_) => PayPage(
-                              selectedSeats: widget.selectedSeats,
-                              selectedTime: widget.time,
-                              movie: widget.movie,
-                              price: newPrice,
-                              cinema: widget.cinema,
-                              room: widget.room,
-                              paymentMethods: state,
-                              movieRoom: widget.movieRoom,
-                              totalChooseFoodDrink: totalChooseFoodDrink,
-                              seatUser: seatUser,
-                            ),
-                          ),
-                        );
                       } catch (error) {
                         if (Get.isDialogOpen == true) {
                           Get.back();
@@ -736,7 +724,7 @@ class _OrderFoodDrinkState extends ConsumerState<OrderFoodDrink> {
               await ref.read(foodDrinkProvider.notifier).refreshFoodDrink(),
           child: Stack(
             children: [
-              ...backgroundApp(widget.movie.urlImage!),
+              ...backgroundApp(widget.paramsOrderFoodDrink.movie.urlImage!),
               SafeArea(
                 child: Padding(
                   padding: const EdgeInsets.only(

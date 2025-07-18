@@ -1,15 +1,15 @@
+import 'package:ceni_fruit/Router/navigation_hepler.dart';
 import 'package:ceni_fruit/config/day_of_cinema.dart';
+import 'package:ceni_fruit/config/popup_rating_movie.dart';
 import 'package:ceni_fruit/config/show_snack_bar.dart';
 import 'package:ceni_fruit/config/style_button.dart';
-import 'package:ceni_fruit/home_creen.dart';
-import 'package:ceni_fruit/pages/login_page.dart';
+import 'package:ceni_fruit/model/booking.dart';
 import 'package:ceni_fruit/provider/holding_seat_provider.dart';
 import 'package:ceni_fruit/provider/movie_provider.dart';
 import 'package:ceni_fruit/provider/order_provider.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
 import 'package:get/get.dart';
 import 'package:ceni_fruit/config/const.dart';
-import 'package:ceni_fruit/pages/booking_page.dart';
 import 'package:ceni_fruit/provider/cinema_provider.dart';
 import 'package:ceni_fruit/provider/movie_hot_provider.dart';
 import 'package:intl/intl.dart';
@@ -84,6 +84,96 @@ class _DetailCinemaPageState extends ConsumerState<DetailCinemaPage> {
       setState(() {
         detailCinemaState = value ?? [];
       });
+    }
+  }
+
+  Future<void> funcHanldeToBooking(Room r, detailCinemaState) async {
+    final navigator = Navigator.of(context);
+
+    try {
+      Get.dialog(Center(child: circularProgress), barrierDismissible: false);
+
+      final movieRoom = detailCinemaState.movieRooms.firstWhere(
+        (mr) => mr.idRoom == r.idRoom,
+      );
+
+      final data = await ref
+          .read(holdingSeatServiceProvider)
+          .getSelectedSeat(movieRoom.idMovieRoom!);
+
+      final dataBooked = await ref
+          .read(orderServiceProvider)
+          .getBooked(r.idRoom!, detailCinemaState.movie.idMovie!);
+
+      if (navigator.canPop()) {
+        navigator.pop();
+      }
+
+      if (!data["success"]) {
+        showSnackbar(
+          title: "Tài khoản",
+          message: data["message"],
+          type: "error",
+          func: () async {
+            if (data.containsKey("typeError") &&
+                data["typeError"] == "Chưa được xác minh") {
+              NavigationHelper.goToLogin(returnRoute: '/detail_cinema');
+            } else if (data.containsKey("typeError") &&
+                data["typeError"] == "conflitRoom") {
+              try {
+                await ref.read(getOrderWithTicketIdUser.notifier).loadTicket();
+
+                NavigationHelper.goToHome(index: 2);
+              } catch (error) {
+                showSnackbar(
+                  title: "Lỗi hệ thống",
+                  message: "$error",
+                  type: "error",
+                );
+              }
+            }
+          },
+        );
+        return;
+      }
+
+      if (!dataBooked["success"]) {
+        showSnackbar(
+          title: "Ghế",
+          message: dataBooked["message"],
+          type: "error",
+        );
+        return;
+      }
+
+      final seatUser = data["data"]["seatUser"] != null
+          ? HoldingSeat.fromJson(data["data"]["seatUser"])
+          : null;
+
+      final List<String> seatsDiff = (data["data"]["seatsDiff"] as List)
+          .map((s) => s.toString())
+          .toList();
+
+      final List<String> bookedSeat = (dataBooked["data"]["booked"] as List)
+          .map((s) => s.toString())
+          .toList();
+
+      Booking params = Booking(
+        movie: detailCinemaState.movie,
+        movieRoom: movieRoom,
+        cinema: widget.cinema,
+        room: r,
+        seatUser: seatUser,
+        seatsDiff: seatsDiff,
+        booked: bookedSeat,
+      );
+
+      NavigationHelper.goToBooking(booking: params);
+    } catch (error) {
+      if (navigator.canPop()) {
+        navigator.pop();
+      }
+      showSnackbar(title: "Lỗi hệ thống", message: "$error", type: "error");
     }
   }
 
@@ -192,7 +282,7 @@ class _DetailCinemaPageState extends ConsumerState<DetailCinemaPage> {
                                     size: iconfontSizeNormal,
                                   ),
                                   Text(
-                                    '${detailCinemaState.movie.rate} /10',
+                                    '${detailCinemaState.movie.rate} / 5',
                                     style: style,
                                   ),
                                   if (detailCinemaState.movie.rateCount! > 0)
@@ -204,199 +294,17 @@ class _DetailCinemaPageState extends ConsumerState<DetailCinemaPage> {
                               ),
 
                               GestureDetector(
-                                onTap: () {
-                                  Get.dialog(
-                                    StatefulBuilder(
-                                      builder: (context, setState) {
-                                        return AlertDialog(
-                                          backgroundColor: Colors.white,
-
-                                          insetPadding: EdgeInsets.all(
-                                            spacingMedium,
-                                          ),
-                                          shape: RoundedRectangleBorder(
-                                            borderRadius: borderRadiusCardSmall,
-                                          ),
-
-                                          title: RichText(
-                                            text: TextSpan(
-                                              style: TextStyle(
-                                                fontWeight: fontWeightSemiBold,
-                                                color: hexColorTextBlack,
-                                                letterSpacing:
-                                                    letterSpacingSmall,
-                                                fontSize:
-                                                    textfontSizeTitleAppBar,
-                                              ),
-                                              children: [
-                                                TextSpan(
-                                                  text:
-                                                      "${detailCinemaState.movie.name} ",
-                                                ),
-                                                TextSpan(
-                                                  text: "($score/10)",
-                                                  style: styleTextSpecial,
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                          titlePadding: const EdgeInsets.all(
-                                            spacingMedium,
-                                          ),
-                                          contentPadding: const EdgeInsets.only(
-                                            right: spacingMedium,
-                                            left: spacingMedium,
-                                            bottom: spacingMedium,
-                                          ),
-                                          buttonPadding: const EdgeInsets.all(
-                                            spacingMedium,
-                                          ),
-                                          content: RatingBar.builder(
-                                            minRating: 0,
-                                            maxRating: 10,
-                                            itemCount: 10,
-                                            allowHalfRating: true,
-                                            wrapAlignment: WrapAlignment.center,
-                                            itemSize: 30,
-                                            itemBuilder: (context, index) =>
-                                                const Icon(
-                                                  Icons.star_rounded,
-                                                  color: colorIcon,
-                                                ),
-                                            onRatingUpdate: (value) {
-                                              setState(() {
-                                                score = value;
-                                              });
-                                            },
-                                          ),
-                                          actions: [
-                                            ElevatedButton(
-                                              onPressed: () => Get.back(),
-                                              style: ButtonStyle(
-                                                backgroundColor:
-                                                    WidgetStatePropertyAll(
-                                                      hexColorLogout,
-                                                    ),
-                                                shape: WidgetStatePropertyAll(
-                                                  RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        borderRadiusButton,
-                                                  ),
-                                                ),
-                                              ),
-                                              child: Text("HỦY", style: style),
-                                            ),
-                                            ElevatedButton(
-                                              onPressed: () async {
-                                                try {
-                                                  Get.back();
-                                                  final navigator =
-                                                      Navigator.of(context);
-
-                                                  Get.dialog(
-                                                    Center(
-                                                      child: circularProgress,
-                                                    ),
-                                                    barrierDismissible: false,
-                                                  );
-
-                                                  final movieRoom =
-                                                      detailCinemaState
-                                                          .movieRooms
-                                                          .firstWhere(
-                                                            (mr) =>
-                                                                mr.idMovie ==
-                                                                detailCinemaState
-                                                                    .movie
-                                                                    .idMovie,
-                                                          );
-                                                  final resultRatingMovie =
-                                                      await ref
-                                                          .read(
-                                                            movieServiceProvider,
-                                                          )
-                                                          .ratingMovie(
-                                                            movieRoom
-                                                                .idMovieRoom!,
-                                                            score,
-                                                          );
-
-                                                  if (Get.isDialogOpen ==
-                                                      true) {
-                                                    Get.back();
-                                                  }
-
-                                                  if (!resultRatingMovie["success"]) {
-                                                    showSnackbar(
-                                                      title: "Đánh giá phim",
-                                                      message:
-                                                          resultRatingMovie["message"],
-                                                      type: "error",
-                                                      func: () async {
-                                                        if (resultRatingMovie
-                                                                .containsKey(
-                                                                  "typeError",
-                                                                ) &&
-                                                            resultRatingMovie["typeError"] ==
-                                                                "Chưa được xác minh") {
-                                                          navigator.push(
-                                                            MaterialPageRoute(
-                                                              builder: (_) =>
-                                                                  LoginPage(),
-                                                            ),
-                                                          );
-                                                        }
-                                                      },
-                                                    );
-                                                    return;
-                                                  }
-                                                  await getMovieDate();
-                                                  showSnackbar(
-                                                    title: "Đánh giá phim",
-                                                    message:
-                                                        resultRatingMovie["message"],
-                                                    type: "success",
-                                                  );
-                                                } catch (error) {
-                                                  if (Get.isDialogOpen ==
-                                                      true) {
-                                                    Get.back();
-                                                  }
-
-                                                  showSnackbar(
-                                                    title: "Lỗi hệ thống",
-                                                    message: "$error",
-                                                    type: "error",
-                                                  );
-                                                }
-                                              },
-                                              style: ButtonStyle(
-                                                backgroundColor:
-                                                    WidgetStatePropertyAll(
-                                                      colorTextSuccess,
-                                                    ),
-                                                shape: WidgetStatePropertyAll(
-                                                  RoundedRectangleBorder(
-                                                    borderRadius:
-                                                        borderRadiusButton,
-                                                  ),
-                                                ),
-                                              ),
-
-                                              child: Text(
-                                                "XÁC NHẬN",
-                                                style: style,
-                                              ),
-                                            ),
-                                          ],
-                                        );
-                                      },
-                                    ),
-                                  ).then((value) {
-                                    setState(() {
-                                      score = 0;
-                                    });
-                                  });
+                                onTap: () async {
+                                  await popupRatingMovie(
+                                    ref: ref,
+                                    detailCinemaState: detailCinemaState,
+                                    onScoreChanged: (value) {
+                                      setState(() {
+                                        score = value;
+                                      });
+                                    },
+                                    getMovieDate: getMovieDate,
+                                  );
                                 },
                                 child: Text(
                                   'Đánh giá',
@@ -414,116 +322,10 @@ class _DetailCinemaPageState extends ConsumerState<DetailCinemaPage> {
               Wrap(
                 spacing: spacingMedium,
                 children: rooms.map((r) {
-                  return customElevatedButtonBgTransparent(() async {
-                    try {
-                      Get.dialog(
-                        Center(child: circularProgress),
-                        barrierDismissible: false,
-                      );
-                      final navigator = Navigator.of(context);
-
-                      final movieRoom = detailCinemaState.movieRooms.firstWhere(
-                        (mr) => mr.idRoom == r.idRoom,
-                      );
-
-                      final data = await ref
-                          .read(holdingSeatServiceProvider)
-                          .getSelectedSeat(movieRoom.idMovieRoom!);
-
-                      final dataBooked = await ref
-                          .read(orderServiceProvider)
-                          .getBooked(
-                            r.idRoom!,
-                            detailCinemaState.movie.idMovie!,
-                          );
-
-                      if (Get.isDialogOpen == true) {
-                        Get.back();
-                      }
-
-                      if (!data["success"]) {
-                        showSnackbar(
-                          title: "Tài khoản",
-                          message: data["message"],
-                          type: "error",
-                          func: () async {
-                            if (data.containsKey("typeError") &&
-                                data["typeError"] == "Chưa được xác minh") {
-                              navigator.push(
-                                MaterialPageRoute(builder: (_) => LoginPage()),
-                              );
-                            } else if (data.containsKey("typeError") &&
-                                data["typeError"] == "conflitRoom") {
-                              try {
-                                await ref
-                                    .read(getOrderWithTicketIdUser.notifier)
-                                    .loadTicket();
-
-                                navigator.push(
-                                  MaterialPageRoute(
-                                    builder: (_) => HomeCreen(index: 2),
-                                  ),
-                                );
-                              } catch (error) {
-                                showSnackbar(
-                                  title: "Lỗi hệ thống",
-                                  message: "$error",
-                                  type: "error",
-                                );
-                              }
-                            }
-                          },
-                        );
-                        return;
-                      }
-
-                      if (!dataBooked["success"]) {
-                        showSnackbar(
-                          title: "Ghế",
-                          message: dataBooked["message"],
-                          type: "error",
-                        );
-                        return;
-                      }
-
-                      final seatUser = data["data"]["seatUser"] != null
-                          ? HoldingSeat.fromJson(data["data"]["seatUser"])
-                          : null;
-
-                      final List<String> seatsDiff =
-                          (data["data"]["seatsDiff"] as List)
-                              .map((s) => s.toString())
-                              .toList();
-
-                      final List<String> bookedSeat =
-                          (dataBooked["data"]["booked"] as List)
-                              .map((s) => s.toString())
-                              .toList();
-
-                      navigator.push(
-                        MaterialPageRoute(
-                          builder: (_) => BookingPage(
-                            movie: detailCinemaState.movie,
-                            movieRoom: movieRoom,
-                            cinema: widget.cinema,
-                            room: r,
-                            seatUser: seatUser,
-                            seatsDiff: seatsDiff,
-                            booked: bookedSeat,
-                          ),
-                        ),
-                      );
-                    } catch (error) {
-                      if (Get.isDialogOpen == true) {
-                        Get.back();
-                      }
-                      showSnackbar(
-                        title: "Lỗi hệ thống",
-                        message: "$error",
-                        type: "error",
-                      );
-                    }
-                  }, Text("Phòng ${r.roomNumber}", style: style));
+                  return customElevatedButtonBgTransparent(
+                    () => funcHanldeToBooking(r, detailCinemaState),
+                    Text("Phòng ${r.roomNumber}", style: style),
+                  );
                 }).toList(),
               ),
             ],

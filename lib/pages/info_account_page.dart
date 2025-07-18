@@ -1,3 +1,4 @@
+import 'package:ceni_fruit/Router/navigation_hepler.dart';
 import 'package:ceni_fruit/config/background_app.dart';
 import 'package:ceni_fruit/config/const.dart';
 import 'package:ceni_fruit/config/show_snack_bar.dart';
@@ -54,90 +55,6 @@ class _InfoAccountPageState extends ConsumerState<InfoAccountPage> {
   var confirmNewPasswordController = TextEditingController();
   bool updatePassword = false;
 
-  Widget buildOldPassword() {
-    return Container(
-      height: 50,
-      decoration: BoxDecoration(
-        borderRadius: borderRadiusCardSmall,
-        color: colorTextApp,
-        boxShadow: [
-          BoxShadow(offset: Offset(3, 3), blurRadius: 6, color: shadowColorBox),
-        ],
-      ),
-      child: TextFormField(
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return "Enter your current password";
-          }
-          return null;
-        },
-        controller: currentPasswordController,
-        decoration: InputDecoration(
-          border: InputBorder.none,
-          hintText: "Enter your current password",
-          prefixIcon: Icon(Icons.password_rounded),
-          contentPadding: EdgeInsets.only(top: 14),
-        ),
-      ),
-    );
-  }
-
-  Widget buildNewPassword() {
-    return Container(
-      height: 50,
-      decoration: BoxDecoration(
-        borderRadius: borderRadiusCardSmall,
-        color: colorTextApp,
-        boxShadow: [
-          BoxShadow(offset: Offset(3, 3), blurRadius: 6, color: shadowColorBox),
-        ],
-      ),
-      child: TextFormField(
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return "Enter your new password";
-          }
-          return null;
-        },
-        controller: newPasswordController,
-        decoration: InputDecoration(
-          border: InputBorder.none,
-          hintText: "Enter your new password",
-          prefixIcon: Icon(Icons.password_rounded),
-          contentPadding: EdgeInsets.only(top: 14),
-        ),
-      ),
-    );
-  }
-
-  Widget buildConfirmNewPassword() {
-    return Container(
-      height: 50,
-      decoration: BoxDecoration(
-        borderRadius: borderRadiusCardSmall,
-        color: colorTextApp,
-        boxShadow: [
-          BoxShadow(offset: Offset(3, 3), blurRadius: 6, color: shadowColorBox),
-        ],
-      ),
-      child: TextFormField(
-        validator: (value) {
-          if (value == null || value.isEmpty) {
-            return "Re-enter new password";
-          }
-          return null;
-        },
-        controller: confirmNewPasswordController,
-        decoration: InputDecoration(
-          border: InputBorder.none,
-          hintText: "Re-enter new password",
-          prefixIcon: Icon(Icons.password_rounded),
-          contentPadding: EdgeInsets.only(top: 14),
-        ),
-      ),
-    );
-  }
-
   Widget buildButtonUpdatePassword() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -169,6 +86,7 @@ class _InfoAccountPageState extends ConsumerState<InfoAccountPage> {
         child: ElevatedButton(
           style: buttonStyle,
           onPressed: () async {
+            final navigator = Navigator.of(context);
             Get.dialog(
               Center(child: circularProgress),
               barrierDismissible: false,
@@ -191,8 +109,8 @@ class _InfoAccountPageState extends ConsumerState<InfoAccountPage> {
                   .read(userHandleProvider.notifier)
                   .update(data);
 
-              if (Get.isDialogOpen == true) {
-                Get.back();
+              if (navigator.canPop()) {
+                navigator.pop();
               }
               if (result["statusCode"] == 200) {
                 showSnackbar(
@@ -209,8 +127,8 @@ class _InfoAccountPageState extends ConsumerState<InfoAccountPage> {
                 );
               }
             } catch (error) {
-              if (Get.isDialogOpen == true) {
-                Get.back();
+              if (navigator.canPop()) {
+                navigator.pop();
               }
               showSnackbar(
                 title: "Lỗi hệ thống",
@@ -239,6 +157,7 @@ class _InfoAccountPageState extends ConsumerState<InfoAccountPage> {
       extendBodyBehindAppBar: true,
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
+        centerTitle: false,
         backgroundColor: Colors.transparent,
         iconTheme: IconThemeData(color: colorTextApp),
         title: Text("Chỉnh sửa thông tin", style: tilteStyleApp),
@@ -299,14 +218,25 @@ class _InfoAccountPageState extends ConsumerState<InfoAccountPage> {
                             Icon(Icons.lock_outline_rounded),
                             null,
                             "",
+                            isPassword: true,
                           ),
-                          Text(
-                            "Quên mật khẩu",
-                            style: TextStyle(
-                              color: hexColorLogout,
-                              fontSize: textfontSizeApp,
-                              letterSpacing: letterSpacingSmall,
-                              fontWeight: fontWeightSemiBold,
+                          GestureDetector(
+                            onTap: () {
+                              if (widget.user?.email != null) {
+                                NavigationHelper.goToForgotPassword(
+                                  email: widget.user?.email,
+                                  returnRoute: '/information_user',
+                                );
+                              }
+                            },
+                            child: Text(
+                              "Quên mật khẩu",
+                              style: TextStyle(
+                                color: hexColorLogout,
+                                fontSize: textfontSizeApp,
+                                letterSpacing: letterSpacingSmall,
+                                fontWeight: fontWeightSemiBold,
+                              ),
                             ),
                           ),
                         ],
@@ -319,6 +249,7 @@ class _InfoAccountPageState extends ConsumerState<InfoAccountPage> {
                         Icon(Icons.lock_outline_rounded),
                         null,
                         "",
+                        isPassword: true,
                       ),
                       SizedBox(height: spacingBig),
                       buildFeld(
@@ -328,6 +259,7 @@ class _InfoAccountPageState extends ConsumerState<InfoAccountPage> {
                         Icon(Icons.lock_outline_rounded),
                         null,
                         "",
+                        isPassword: true,
                       ),
                     ],
                     buildButtonUpdateInfo(),

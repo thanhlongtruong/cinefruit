@@ -1,4 +1,6 @@
+import 'package:ceni_fruit/Router/navigation_hepler.dart';
 import 'package:ceni_fruit/config/show_snack_bar.dart';
+import 'package:ceni_fruit/model/detail_movie.dart';
 import 'package:ceni_fruit/provider/movie_room_provider.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
@@ -6,7 +8,6 @@ import 'package:ceni_fruit/config/const.dart';
 import 'package:ceni_fruit/config/widget_loading_error.dart';
 import 'package:ceni_fruit/config/catch_network_image.dart';
 import 'package:ceni_fruit/config/background_app.dart';
-import 'package:ceni_fruit/pages/detail_movie_page.dart';
 import 'package:ceni_fruit/model/movie.dart';
 import 'package:ceni_fruit/provider/movie_hot_provider.dart';
 import 'package:ceni_fruit/provider/movie_provider.dart';
@@ -40,8 +41,6 @@ class _MoviePageState extends ConsumerState<MoviePage> {
     return GestureDetector(
       onTap: () async {
         try {
-          final navigator = Navigator.of(context);
-
           Get.dialog(
             Center(child: circularProgress),
             barrierDismissible: false,
@@ -70,16 +69,14 @@ class _MoviePageState extends ConsumerState<MoviePage> {
               type: "error",
             );
           } else {
-            navigator.push(
-              MaterialPageRoute(
-                builder: (_) => DetailMovieScreen(
-                  movie: movie,
-                  cinemas: state.value!.cinemas,
-                  movieRooms: state.value!.movieRooms,
-                  rooms: state.value!.rooms,
-                ),
-              ),
+            DetailMovie params = DetailMovie(
+              movie: movie,
+              cinemas: state.value!.cinemas,
+              movieRooms: state.value!.movieRooms,
+              rooms: state.value!.rooms,
             );
+
+            NavigationHelper.goToDetailMovie(detailMovie: params);
           }
         } catch (error) {
           if (Get.isDialogOpen == true) {

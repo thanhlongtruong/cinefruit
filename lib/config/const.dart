@@ -53,6 +53,7 @@ final dioProvider = Provider<Dio>((ref) {
     "/payment_method/get/all",
     "/user/verificarion-email",
     "/user/update/verification",
+    "/user/forgot-password",
   ];
 
   final userService = UserService(dio);

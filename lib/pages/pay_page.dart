@@ -1,23 +1,17 @@
+import 'package:ceni_fruit/Router/navigation_hepler.dart';
 import 'package:ceni_fruit/config/background_app.dart';
 import 'package:ceni_fruit/config/const.dart';
 import 'package:ceni_fruit/config/show_snack_bar.dart';
 import 'package:ceni_fruit/config/style_login_register.dart';
 import 'package:ceni_fruit/config/convert_time.dart';
 import 'package:ceni_fruit/config/styles.dart';
-import 'package:ceni_fruit/home_creen.dart';
-import 'package:ceni_fruit/model/cinema.dart';
-import 'package:ceni_fruit/model/food_drink.dart';
-import 'package:ceni_fruit/model/movie.dart';
-import 'package:ceni_fruit/model/movie_room.dart';
-import 'package:ceni_fruit/model/room.dart';
+import 'package:ceni_fruit/model/params_pay_page.dart';
 import 'package:ceni_fruit/model/holding_seat.dart';
 import 'package:ceni_fruit/model/payment_method.dart';
-import 'package:ceni_fruit/pages/Payment/paypal_webview.dart';
-import 'package:ceni_fruit/pages/booked_ticket_page.dart';
-import 'package:ceni_fruit/provider/holding_seat_provider.dart';
 import 'package:ceni_fruit/provider/order_provider.dart';
 import 'package:ceni_fruit/provider/payment_method_provider.dart';
 import 'package:ceni_fruit/provider/paypal_provider.dart';
+import 'package:ceni_fruit/provider/momo_provider.dart';
 import 'package:ceni_fruit/service/currency_exchange_service.dart';
 import 'package:ceni_fruit/ticket_shape.dart';
 import 'package:flutter/material.dart';
@@ -26,36 +20,8 @@ import 'package:slide_countdown/slide_countdown.dart';
 import 'package:get/get.dart';
 
 class PayPage extends ConsumerStatefulWidget {
-  final Movie movie;
-  final Cinema cinema;
-  final Room room;
-  final String selectedTime;
-  final MovieRoom movieRoom;
-  final List<PaymentMethod> paymentMethods;
-  final HoldingSeat? seatUser;
-
-  final List<Map<String, dynamic>> totalChooseFoodDrink;
-
-  final List<String> selectedSeats;
-  final String price;
-  final String typeInformationThisPage;
-  final String selectedPaymentMethod;
-
-  const PayPage({
-    super.key,
-    required this.movie,
-    required this.cinema,
-    required this.room,
-    required this.movieRoom,
-    required this.paymentMethods,
-    required this.selectedTime,
-    required this.totalChooseFoodDrink,
-    required this.price,
-    required this.selectedSeats,
-    required this.seatUser,
-    this.typeInformationThisPage = "page_payment",
-    this.selectedPaymentMethod = "",
-  });
+  final ParamsPayPage paramsPayPage;
+  const PayPage({super.key, required this.paramsPayPage});
 
   @override
   ConsumerState<PayPage> createState() => _PayPageState();
@@ -71,12 +37,11 @@ class _PayPageState extends ConsumerState<PayPage> {
   @override
   void initState() {
     super.initState();
-    seatUser = widget.seatUser;
-    paymentMethods = widget.paymentMethods;
-    price = widget.price;
-    selectedPaymentMethod = widget.selectedPaymentMethod;
+    seatUser = widget.paramsPayPage.seatUser;
+    paymentMethods = widget.paramsPayPage.paymentMethods;
+    price = widget.paramsPayPage.price;
+    selectedPaymentMethod = widget.paramsPayPage.selectedPaymentMethod;
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -87,7 +52,7 @@ class _PayPageState extends ConsumerState<PayPage> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         title: Text(
-          widget.typeInformationThisPage == "review"
+          widget.paramsPayPage.typeInformationThisPage == "review"
               ? "Thông tin vé"
               : "Thanh toán",
           style: tilteStyleApp,
@@ -140,8 +105,7 @@ class _PayPageState extends ConsumerState<PayPage> {
                           setState(() {
                             seatUser = null;
                           });
-                          Navigator.pop(context);
-                          Navigator.pop(context);
+                          NavigationHelper.goBack();
                         },
                       ),
                     ],
@@ -153,7 +117,7 @@ class _PayPageState extends ConsumerState<PayPage> {
       body: Stack(
         fit: StackFit.expand,
         children: [
-          ...backgroundApp(widget.movie.urlImage!),
+          ...backgroundApp(widget.paramsPayPage.movie.urlImage!),
           SafeArea(
             child: Padding(
               padding: const EdgeInsets.only(
@@ -169,9 +133,11 @@ class _PayPageState extends ConsumerState<PayPage> {
                     child: Row(
                       spacing: spacingLarge,
                       children: List.generate(
-                        widget.selectedSeats.length,
-                        (index) =>
-                            ticketShape(index + 1, widget.selectedSeats[index]),
+                        widget.paramsPayPage.selectedSeats.length,
+                        (index) => ticketShape(
+                          index + 1,
+                          widget.paramsPayPage.selectedSeats[index],
+                        ),
                       ),
                     ),
                   ),
@@ -226,7 +192,7 @@ class _PayPageState extends ConsumerState<PayPage> {
                       spacing: spacingSmall,
                       children: [
                         Text(
-                          "Phim: ${widget.movie.name}",
+                          "Phim: ${widget.paramsPayPage.movie.name}",
                           style: TextStyle(
                             color: hexColorTextBlack,
                             letterSpacing: letterSpacingSmall,
@@ -241,7 +207,7 @@ class _PayPageState extends ConsumerState<PayPage> {
                           spacing: spacingTiny,
                           children: [
                             Text(
-                              "Phòng: ${widget.room.roomNumber}",
+                              "Phòng: ${widget.paramsPayPage.room.roomNumber}",
                               style: TextStyle(
                                 color: hexColorTextBlack,
                                 letterSpacing: letterSpacingSmall,
@@ -265,7 +231,7 @@ class _PayPageState extends ConsumerState<PayPage> {
                           ],
                         ),
                         Text(
-                          "Suất: ${widget.selectedTime} ${widget.movieRoom.date}",
+                          "Suất: ${widget.paramsPayPage.selectedTime} ${widget.paramsPayPage.movieRoom.date}",
                           style: TextStyle(
                             color: hexColorTextBlack,
                             letterSpacing: letterSpacingSmall,
@@ -276,7 +242,7 @@ class _PayPageState extends ConsumerState<PayPage> {
                           maxLines: 2,
                         ),
                         Text(
-                          "Thời lượng: ${widget.movie.duration}",
+                          "Thời lượng: ${widget.paramsPayPage.movie.duration}",
                           style: TextStyle(
                             color: hexColorTextBlack,
                             letterSpacing: letterSpacingSmall,
@@ -301,6 +267,7 @@ class _PayPageState extends ConsumerState<PayPage> {
   Widget informationOrder() {
     return RefreshIndicator(
       onRefresh: () async {
+        final navigator = Navigator.of(context);
         try {
           Get.dialog(
             Center(child: circularProgress),
@@ -312,12 +279,12 @@ class _PayPageState extends ConsumerState<PayPage> {
           setState(() {
             paymentMethods = state;
           });
-          if (Get.isDialogOpen == true) {
-            Get.back();
+          if (navigator.canPop()) {
+            navigator.pop();
           }
         } catch (error) {
-          if (Get.isDialogOpen == true) {
-            Get.back();
+          if (navigator.canPop()) {
+            navigator.pop();
           }
           showSnackbar(
             title: "Lỗi hệ thống",
@@ -340,7 +307,7 @@ class _PayPageState extends ConsumerState<PayPage> {
           ),
           const SizedBox(height: spacingMedium),
           Text(
-            "Rạp : ${widget.cinema.name}",
+            "Rạp : ${widget.paramsPayPage.cinema.name}",
             style: TextStyle(
               color: colorTextApp,
               letterSpacing: letterSpacingSmall,
@@ -353,7 +320,7 @@ class _PayPageState extends ConsumerState<PayPage> {
           const SizedBox(height: spacingMedium),
 
           Text(
-            "Địa chỉ : ${widget.cinema.address}",
+            "Địa chỉ : ${widget.paramsPayPage.cinema.address}",
             style: TextStyle(
               color: colorTextApp,
               letterSpacing: letterSpacingSmall,
@@ -363,13 +330,13 @@ class _PayPageState extends ConsumerState<PayPage> {
             overflow: TextOverflow.ellipsis,
             maxLines: 3,
           ),
-          const SizedBox(height: spacingMedium),
 
-          if (widget.totalChooseFoodDrink.isNotEmpty)
+          if (widget.paramsPayPage.totalChooseFoodDrink.isNotEmpty)
             Column(
               spacing: spacingMedium,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                const SizedBox(height: spacingMedium),
                 Text(
                   "Bắp nước",
                   style: TextStyle(
@@ -383,12 +350,12 @@ class _PayPageState extends ConsumerState<PayPage> {
                   spacing: spacingMedium,
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: List.generate(
-                    widget.totalChooseFoodDrink.length,
+                    widget.paramsPayPage.totalChooseFoodDrink.length,
                     (index) => Column(
                       spacing: spacingMedium,
                       children: [
                         Text(
-                          "${index + 1} : ${widget.totalChooseFoodDrink[index]["id"].name} - ${widget.totalChooseFoodDrink[index]["id"].price} VND x ${widget.totalChooseFoodDrink[index]["quantity"]}",
+                          "${index + 1} : ${widget.paramsPayPage.totalChooseFoodDrink[index]["id"].name} - ${widget.paramsPayPage.totalChooseFoodDrink[index]["id"].price} VND x ${widget.paramsPayPage.totalChooseFoodDrink[index]["quantity"]}",
                           style: TextStyle(
                             color: colorTextApp,
                             letterSpacing: letterSpacingSmall,
@@ -406,7 +373,7 @@ class _PayPageState extends ConsumerState<PayPage> {
           const SizedBox(height: spacingMedium),
 
           Text(
-            "Giá vé : ${widget.movie.price} VND x ${widget.selectedSeats.length}",
+            "Giá vé : ${widget.paramsPayPage.movie.price} VND x ${widget.paramsPayPage.selectedSeats.length}",
             style: TextStyle(
               color: colorTextApp,
               letterSpacing: letterSpacingSmall,
@@ -417,7 +384,7 @@ class _PayPageState extends ConsumerState<PayPage> {
           const SizedBox(height: spacingMedium),
 
           Text(
-            "Tổng cộng : ${selectedPaymentMethod == "Paypal" ? price : widget.price}",
+            "Tổng cộng : ${selectedPaymentMethod == "Paypal" ? price : widget.paramsPayPage.price}",
             style: TextStyle(
               color: colorTextApp,
               letterSpacing: letterSpacingSmall,
@@ -427,7 +394,7 @@ class _PayPageState extends ConsumerState<PayPage> {
           ),
           const SizedBox(height: spacingMedium),
 
-          if (widget.typeInformationThisPage != "review")
+          if (widget.paramsPayPage.typeInformationThisPage != "review")
             Text(
               "Các phương thức thanh toán",
               style: TextStyle(
@@ -439,7 +406,7 @@ class _PayPageState extends ConsumerState<PayPage> {
             ),
           const SizedBox(height: spacingMedium),
 
-          if (widget.typeInformationThisPage != "review")
+          if (widget.paramsPayPage.typeInformationThisPage != "review")
             paymentMethods.isNotEmpty
                 ? Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -450,6 +417,7 @@ class _PayPageState extends ConsumerState<PayPage> {
                           Expanded(
                             child: GestureDetector(
                               onTap: () async {
+                                final navigator = Navigator.of(context);
                                 selectedPaymentMethod =
                                     paymentMethods[index].paymentMethod;
                                 if (selectedPaymentMethod == "Paypal") {
@@ -459,8 +427,8 @@ class _PayPageState extends ConsumerState<PayPage> {
                                       barrierDismissible: false,
                                     );
                                     final result = await getExchangeRate();
-                                    if (Get.isDialogOpen == true) {
-                                      Get.back();
+                                    if (navigator.canPop()) {
+                                      navigator.pop();
                                     }
                                     if (!result["success"] ||
                                         result["usd"] == null) {
@@ -473,11 +441,11 @@ class _PayPageState extends ConsumerState<PayPage> {
 
                                     setState(() {
                                       price =
-                                          "${double.tryParse((currencyVND(widget.price) * result["usd"]).toStringAsFixed(2))} USD";
+                                          "${double.tryParse((currencyVND(widget.paramsPayPage.price) * result["usd"]).toStringAsFixed(2))} USD";
                                     });
                                   } catch (e) {
-                                    if (Get.isDialogOpen == true) {
-                                      Get.back();
+                                    if (navigator.canPop()) {
+                                      navigator.pop();
                                     }
                                     showSnackbar(
                                       title: "Lỗi hệ thống",
@@ -505,9 +473,16 @@ class _PayPageState extends ConsumerState<PayPage> {
                             ),
                           ),
                           Radio<String>(
+                            fillColor: WidgetStateProperty.resolveWith<Color>((
+                              states,
+                            ) {
+                              if (states.contains(WidgetState.selected)) {
+                                return colorIcon;
+                              }
+                              return Colors.grey;
+                            }),
                             value: paymentMethods[index].paymentMethod!,
                             groupValue: selectedPaymentMethod,
-                            activeColor: colorIcon,
                             onChanged: (value) => setState(() {
                               selectedPaymentMethod = value;
                             }),
@@ -526,179 +501,304 @@ class _PayPageState extends ConsumerState<PayPage> {
                     ),
                     textAlign: TextAlign.center,
                   ),
-          const SizedBox(height: spacingMedium),
+          const SizedBox(height: spacingBig),
 
-          if (widget.typeInformationThisPage != "review")
+          if (widget.paramsPayPage.typeInformationThisPage != "review")
             Center(
               child: ElevatedButton(
                 onPressed: () async {
-                  try {
-                    if (selectedPaymentMethod == "" ||
-                        selectedPaymentMethod == null) {
-                      return;
-                    }
-                    Get.dialog(
-                      Center(child: circularProgress),
-                      barrierDismissible: false,
+                  final navigator = Navigator.of(context);
+                  if (seatUser == null) {
+                    showSnackbar(
+                      title: "Ghế",
+                      message:
+                          "Bạn đã hết thời gian giữ ghế. Vui lòng chọn lại ghế.",
+                      type: "error",
                     );
-
-                    final navigator = Navigator.of(context);
-
-                    final foodDrinks = widget.totalChooseFoodDrink
-                        .map(
-                          (fd) => {
-                            "id": fd["id"].idFoodDrink,
-                            "quantity": fd["quantity"],
-                          },
-                        )
-                        .toList();
-
-                    Object data = {
-                      "idMovieRoom": widget.movieRoom.idMovieRoom,
-                      "foodDrinks": foodDrinks,
-                      "time": widget.selectedTime,
-                      "price": price,
-                      "paymentMethod": selectedPaymentMethod,
-                      "selectedSeats": widget.selectedSeats,
-                      "expiredAt": widget.seatUser?.expiredAt,
-                    };
-
-                    final order = await ref
-                        .read(orderServiceProvider)
-                        .createOrder(data);
-
-                    if (Get.isDialogOpen == true) {
-                      Get.back();
-                    }
-
-                    if (!order["success"]) {
-                      showSnackbar(
-                        title: "Đặt vé",
-                        message: order["message"],
-                        type: "error",
+                    NavigationHelper.goBack();
+                  } else {
+                    try {
+                      if (selectedPaymentMethod == "" ||
+                          selectedPaymentMethod == null) {
+                        return;
+                      }
+                      Get.dialog(
+                        Center(child: circularProgress),
+                        barrierDismissible: false,
                       );
-                      return;
-                    }
 
-                    await ref
-                        .read(getOrderWithTicketIdUser.notifier)
-                        .loadTicket();
+                      final foodDrinks = widget
+                          .paramsPayPage
+                          .totalChooseFoodDrink
+                          .map(
+                            (fd) => {
+                              "id": fd["id"].idFoodDrink,
+                              "quantity": fd["quantity"],
+                            },
+                          )
+                          .toList();
 
-                    switch (selectedPaymentMethod) {
-                      case "Paypal":
-                        Get.dialog(
-                          Center(child: circularProgress),
-                          barrierDismissible: false,
+                      Object data = {
+                        "idMovieRoom":
+                            widget.paramsPayPage.movieRoom.idMovieRoom,
+                        "foodDrinks": foodDrinks,
+                        "time": widget.paramsPayPage.selectedTime,
+                        "price": price,
+                        "paymentMethod": selectedPaymentMethod,
+                        "selectedSeats": widget.paramsPayPage.selectedSeats,
+                        "expiredAt": widget.paramsPayPage.seatUser?.expiredAt,
+                      };
+
+                      final order = await ref
+                          .read(orderServiceProvider)
+                          .createOrder(data);
+
+                      if (navigator.canPop()) {
+                        navigator.pop();
+                      }
+
+                      if (!order["success"]) {
+                        showSnackbar(
+                          title: "Đặt vé",
+                          message: order["message"],
+                          type: "error",
                         );
-                        final resOrder = order["data"]["order"]["_id"];
-                        final priceOrder = order["data"]["order"]["price"];
+                        return;
+                      }
 
-                        final Object data = {
-                          "amount": priceOrder,
-                          "orderId": resOrder,
-                        };
-                        final res = await ref
-                            .read(paypalServiceProvider)
-                            .payPaypal(data);
+                      await ref
+                          .read(getOrderWithTicketIdUser.notifier)
+                          .loadTicket();
 
-                        if (Get.isDialogOpen == true) {
-                          Get.back();
-                        }
-
-                        if (!res["success"]) {
-                          showSnackbar(
-                            title: "Paypal",
-                            message: res["message"],
-                            type: "error",
-                          );
-                          return;
-                        }
-
-                        String url = res["data"]["url"];
-                        if (!url.contains('?')) {
-                          url +=
-                              '?disable-funding=paylater&disable-funding=credit';
-                        } else {
-                          url +=
-                              '&disable-funding=paylater&disable-funding=credit';
-                        }
-
-                        final result = await navigator.push(
-                          MaterialPageRoute(
-                            builder: (_) => PayPalWebView(approvalUrl: url),
-                          ),
-                        );
-                        if (result != null && result['status'] == 'success') {
+                      switch (selectedPaymentMethod) {
+                        case "Paypal":
                           Get.dialog(
                             Center(child: circularProgress),
                             barrierDismissible: false,
                           );
+                          final resOrder = order["data"]["order"]["_id"];
+                          final priceOrder = order["data"]["order"]["price"];
 
-                          final orderId = result['orderId'];
-                          final token = result['token'];
-
-                          await ref
-                              .read(paypalServiceProvider)
-                              .paySuccess(orderId, token);
-
-                          Object data = {
-                            "idOrder": orderId,
-                            "paymentStatus": "Đã thanh toán",
+                          final Object data = {
+                            "amount": priceOrder,
+                            "orderId": resOrder,
                           };
+                          final res = await ref
+                              .read(paypalServiceProvider)
+                              .payPaypal(data);
 
-                          final resultUpdateTransaction = await ref
-                              .read(orderServiceProvider)
-                              .updateTransaction(data);
-
-                          if (Get.isDialogOpen == true) {
-                            Get.back();
+                          if (navigator.canPop()) {
+                            navigator.pop();
                           }
 
-                          if (!resultUpdateTransaction["success"]) {
+                          if (!res["success"]) {
                             showSnackbar(
-                              title: "Thanh toán",
-                              message: resultUpdateTransaction["message"],
+                              title: "Paypal",
+                              message: res["message"],
                               type: "error",
                             );
                             return;
                           }
 
-                          await ref
-                              .read(getOrderWithTicketIdUser.notifier)
-                              .loadTicket();
+                          String url = res["data"]["url"];
+                          if (!url.contains('?')) {
+                            url +=
+                                '?disable-funding=paylater&disable-funding=credit';
+                          } else {
+                            url +=
+                                '&disable-funding=paylater&disable-funding=credit';
+                          }
 
-                          showSnackbar(
-                            title: "Thanh toán",
-                            message: resultUpdateTransaction["message"],
-                            type: "success",
+                          final result =
+                              await NavigationHelper.goToWebViewPaypal(
+                                approvalUrl: url,
+                              );
+
+                          if (result != null && result['status'] == 'success') {
+                            Get.dialog(
+                              Center(child: circularProgress),
+                              barrierDismissible: false,
+                            );
+
+                            final orderId = result['orderId'];
+                            final token = result['token'];
+
+                            await ref
+                                .read(paypalServiceProvider)
+                                .paySuccess(orderId, token);
+
+                            Object data = {
+                              "idOrder": orderId,
+                              "paymentStatus": "Đã thanh toán",
+                            };
+
+                            final resultUpdateTransaction = await ref
+                                .read(orderServiceProvider)
+                                .updateTransaction(data);
+
+                            if (navigator.canPop()) {
+                              navigator.pop();
+                            }
+
+                            if (!resultUpdateTransaction["success"]) {
+                              showSnackbar(
+                                title: "Thanh toán",
+                                message: resultUpdateTransaction["message"],
+                                type: "error",
+                              );
+                              return;
+                            }
+
+                            await ref
+                                .read(getOrderWithTicketIdUser.notifier)
+                                .loadTicket();
+
+                            showSnackbar(
+                              title: "Thanh toán",
+                              message: resultUpdateTransaction["message"],
+                              type: "success",
+                            );
+                            NavigationHelper.goToHomeAndRemove(index: 2);
+                          } else if (result?["status"] == "cancel") {
+                          } else if (result?["status"] == "fail") {
+                            showSnackbar(
+                              title: "Lỗi hệ thống",
+                              message: "${result?["error"]}",
+                              type: "error",
+                            );
+                          }
+
+                          break;
+                        case "MoMo":
+                          final idOrder = order["data"]["order"]["_id"];
+                          final priceOrder = order["data"]["order"]["price"];
+                          var payUrl = order["data"]["order"]["payUrl"];
+
+                          if (payUrl == "") {
+                            Get.dialog(
+                              Center(child: circularProgress),
+                              barrierDismissible: false,
+                            );
+                            final Object data = {
+                              "amount": priceOrder,
+                              "orderId": idOrder,
+                            };
+                            final res = await ref
+                                .read(momoServiceProvider)
+                                .payMoMo(data);
+
+                            if (navigator.canPop()) {
+                              navigator.pop();
+                            }
+
+                            if (!res["success"]) {
+                              showSnackbar(
+                                title: "MoMo",
+                                message: res["message"],
+                                type: "error",
+                              );
+                              return;
+                            }
+
+                            Get.dialog(
+                              Center(child: circularProgress),
+                              barrierDismissible: false,
+                            );
+
+                            final Object dataUpdatePayUrl = {
+                              "idOrder": idOrder,
+                              "payUrl": res["data"]["payUrl"],
+                            };
+
+                            final resUpdateUrlOrder = await ref
+                                .read(orderServiceProvider)
+                                .updatePayUrl(dataUpdatePayUrl);
+
+                            if (navigator.canPop()) {
+                              navigator.pop();
+                            }
+
+                            if (!resUpdateUrlOrder["success"]) {
+                              showSnackbar(
+                                title: "MoMo",
+                                message: resUpdateUrlOrder["message"],
+                                type: "error",
+                              );
+                              return;
+                            }
+
+                            payUrl = res["data"]["payUrl"];
+                          }
+
+                          final result = await NavigationHelper.goToWebViewMoMo(
+                            approvalUrl: payUrl,
                           );
 
-                          navigator.pushAndRemoveUntil(
-                            MaterialPageRoute(
-                              builder: (_) => HomeCreen(index: 2),
-                            ),
-                            (route) => false,
-                          );
-                        } else if (result["status"] == "cancel") {
-                        } else if (result["status"] == "fail") {
-                          showSnackbar(
-                            title: "Lỗi hệ thống",
-                            message: "${result["error"]}",
-                            type: "error",
-                          );
-                        }
+                          if (result != null && result['status'] == 'success') {
+                            Get.dialog(
+                              Center(child: circularProgress),
+                              barrierDismissible: false,
+                            );
 
-                        break;
+                            final orderId = result['orderId'];
+
+                            await ref
+                                .read(momoServiceProvider)
+                                .transactionMoMo(orderId);
+
+                            Object data = {
+                              "idOrder": orderId,
+                              "paymentStatus": "Đã thanh toán",
+                            };
+
+                            final resultUpdateTransaction = await ref
+                                .read(orderServiceProvider)
+                                .updateTransaction(data);
+
+                            if (navigator.canPop()) {
+                              navigator.pop();
+                            }
+
+                            if (!resultUpdateTransaction["success"]) {
+                              showSnackbar(
+                                title: "Thanh toán",
+                                message: resultUpdateTransaction["message"],
+                                type: "error",
+                              );
+                              return;
+                            }
+
+                            await ref
+                                .read(getOrderWithTicketIdUser.notifier)
+                                .loadTicket();
+
+                            showSnackbar(
+                              title: "Thanh toán",
+                              message: resultUpdateTransaction["message"],
+                              type: "success",
+                            );
+                            NavigationHelper.goToHomeAndRemove(index: 2);
+                          } else if (result?["status"] == "cancel") {
+                          } else if (result?["status"] == "fail") {
+                            showSnackbar(
+                              title: "Lỗi hệ thống",
+                              message: "${result?["error"]}",
+                              type: "error",
+                            );
+                          }
+
+                          break;
+                      }
+                    } catch (error) {
+                      if (navigator.canPop()) {
+                        navigator.pop();
+                      }
+                      showSnackbar(
+                        title: "Lỗi hệ thống",
+                        message: "$error",
+                        type: "error",
+                      );
                     }
-                  } catch (error) {
-                    if (Get.isDialogOpen == true) {
-                      Get.back();
-                    }
-                    showSnackbar(
-                      title: "Lỗi hệ thống",
-                      message: "$error",
-                      type: "error",
-                    );
                   }
                 },
                 style: ElevatedButton.styleFrom(

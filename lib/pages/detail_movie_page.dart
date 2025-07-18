@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:ceni_fruit/Router/navigation_hepler.dart';
 import 'package:ceni_fruit/config/const.dart';
 import 'package:ceni_fruit/config/day_of_cinema.dart';
 import 'package:ceni_fruit/config/popup_rating_movie.dart';
@@ -8,19 +9,16 @@ import 'package:ceni_fruit/config/style_button.dart';
 import 'package:ceni_fruit/config/catch_network_image.dart';
 import 'package:ceni_fruit/config/styles.dart';
 import 'package:ceni_fruit/config/background_app.dart';
+import 'package:ceni_fruit/model/booking.dart';
 import 'package:ceni_fruit/model/cinema.dart';
+import 'package:ceni_fruit/model/detail_movie.dart';
 import 'package:ceni_fruit/model/holding_seat.dart';
 import 'package:ceni_fruit/model/movie.dart';
 import 'package:ceni_fruit/model/movie_room.dart';
 import 'package:ceni_fruit/model/room.dart';
-import 'package:ceni_fruit/model/user.dart';
-import 'package:ceni_fruit/pages/login_page.dart';
 import 'package:ceni_fruit/provider/cinema_provider.dart';
 import 'package:ceni_fruit/provider/holding_seat_provider.dart';
 import 'package:ceni_fruit/provider/order_provider.dart';
-import 'package:ceni_fruit/provider/user_profile_provider.dart';
-import 'package:ceni_fruit/service/user_service.dart';
-import 'package:ceni_fruit/pages/booking_page.dart';
 import 'package:ceni_fruit/provider/movie_room_provider.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -30,17 +28,8 @@ import 'package:intl/intl.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 class DetailMovieScreen extends ConsumerStatefulWidget {
-  final Movie movie;
-  final List<Cinema> cinemas;
-  final List<Room> rooms;
-  final List<MovieRoom> movieRooms;
-  const DetailMovieScreen({
-    super.key,
-    required this.movie,
-    required this.cinemas,
-    required this.movieRooms,
-    required this.rooms,
-  });
+  final DetailMovie detailMovie;
+  const DetailMovieScreen({super.key, required this.detailMovie});
 
   @override
   ConsumerState<DetailMovieScreen> createState() => _DetailMovieScreenState();
@@ -77,13 +66,13 @@ class _DetailMovieScreenState extends ConsumerState<DetailMovieScreen> {
   void initState() {
     super.initState();
 
-    movie = widget.movie;
-    cinemas = widget.cinemas;
-    movieRooms = widget.movieRooms;
-    rooms = widget.rooms;
-    fillterCinemas = widget.cinemas;
-    cinemasArea = widget.cinemas.isNotEmpty
-        ? widget.cinemas
+    movie = widget.detailMovie.movie;
+    cinemas = widget.detailMovie.cinemas;
+    movieRooms = widget.detailMovie.movieRooms;
+    rooms = widget.detailMovie.rooms;
+    fillterCinemas = widget.detailMovie.cinemas;
+    cinemasArea = widget.detailMovie.cinemas.isNotEmpty
+        ? widget.detailMovie.cinemas
               .where((c) => c.area != null)
               .map((c) => c.area!)
               .toList()
@@ -94,11 +83,11 @@ class _DetailMovieScreenState extends ConsumerState<DetailMovieScreen> {
     }
 
     params = GetMovieParams(
-      idMovie: widget.movie.idMovie!,
+      idMovie: widget.detailMovie.movie.idMovie!,
       date: DateFormat("dd/MM/yyyy").format(date),
     );
 
-    videoId = YoutubePlayer.convertUrlToId(widget.movie.video!);
+    videoId = YoutubePlayer.convertUrlToId(widget.detailMovie.movie.video!);
 
     if (videoId != null && videoId!.isNotEmpty) {
       youtubePlayerController = YoutubePlayerController(
@@ -113,6 +102,77 @@ class _DetailMovieScreenState extends ConsumerState<DetailMovieScreen> {
     super.dispose();
     if (youtubePlayerController != null) {
       youtubePlayerController!.dispose();
+    }
+  }
+
+  Future<void> funcHanldeToBooking(Room room, Cinema cinema) async {
+    final navigator = Navigator.of(context);
+    try {
+      Get.dialog(Center(child: circularProgress), barrierDismissible: false);
+
+      final movieRoom = movieRooms.firstWhere(
+        (mr) => mr.idMovie == movie.idMovie && mr.idRoom.idRoom == room.idRoom,
+      );
+
+      final data = await ref
+          .read(holdingSeatServiceProvider)
+          .getSelectedSeat(movieRoom.idMovieRoom!);
+
+      final dataBooked = await ref
+          .read(orderServiceProvider)
+          .getBooked(room.idRoom!, movie.idMovie!);
+
+      if (navigator.canPop()) {
+        navigator.pop();
+      }
+
+      if (!data["success"]) {
+        showSnackbar(
+          title: "Tài khoản",
+          message: data["message"],
+          type: "error",
+          func: () => NavigationHelper.goToLogin(returnRoute: '/detail_movie'),
+        );
+        return;
+      }
+
+      if (!dataBooked["success"]) {
+        showSnackbar(
+          title: "Ghế",
+          message: dataBooked["message"],
+          type: "error",
+        );
+        return;
+      }
+
+      final seatUser = data["data"]["seatUser"] != null
+          ? HoldingSeat.fromJson(data["data"]["seatUser"])
+          : null;
+
+      final List<String> seatsDiff = (data["data"]["seatsDiff"] as List)
+          .map((s) => s.toString())
+          .toList();
+
+      final List<String> bookedSeat = (dataBooked["data"]["booked"] as List)
+          .map((s) => s.toString())
+          .toList();
+
+      Booking params = Booking(
+        movie: movie,
+        movieRoom: movieRoom,
+        cinema: cinema,
+        room: room,
+        seatUser: seatUser,
+        seatsDiff: seatsDiff,
+        booked: bookedSeat,
+      );
+
+      NavigationHelper.goToBooking(booking: params);
+    } catch (error) {
+      if (navigator.canPop()) {
+        navigator.pop();
+      }
+      showSnackbar(title: "Lỗi hệ thống", message: "$error", type: "error");
     }
   }
 
@@ -341,7 +401,7 @@ class _DetailMovieScreenState extends ConsumerState<DetailMovieScreen> {
                     selectedDate = index;
                     date = newDate;
                     params = GetMovieParams(
-                      idMovie: widget.movie.idMovie!,
+                      idMovie: widget.detailMovie.movie.idMovie!,
                       date: DateFormat("dd/MM/yyyy").format(date),
                     );
                   }),
@@ -440,7 +500,7 @@ class _DetailMovieScreenState extends ConsumerState<DetailMovieScreen> {
                     ClipRRect(
                       borderRadius: borderRadiusCardSmall,
                       child: cachedNetworkImageConfig(
-                        widget.movie.urlImage!,
+                        widget.detailMovie.movie.urlImage!,
                         130,
                         190,
                         BoxFit.fill,
@@ -453,7 +513,7 @@ class _DetailMovieScreenState extends ConsumerState<DetailMovieScreen> {
                         spacing: spacingMedium,
                         children: [
                           Text(
-                            widget.movie.name ?? "",
+                            widget.detailMovie.movie.name ?? "",
                             style: const TextStyle(
                               fontSize: textfontSizeApp,
                               fontWeight: fontWeightSemiBold,
@@ -471,7 +531,10 @@ class _DetailMovieScreenState extends ConsumerState<DetailMovieScreen> {
                                 Icons.star_rate_rounded,
                                 color: colorIcon,
                               ),
-                              Text("${widget.movie.rate}/10", style: style),
+                              Text(
+                                "${widget.detailMovie.movie.rate} / 5",
+                                style: style,
+                              ),
                               Container(
                                 margin: const EdgeInsets.symmetric(
                                   horizontal: spacingMedium,
@@ -523,7 +586,7 @@ class _DetailMovieScreenState extends ConsumerState<DetailMovieScreen> {
                                 color: Colors.amber,
                               ),
                               Text(
-                                "${widget.movie.duration} phút",
+                                "${widget.detailMovie.movie.duration} phút",
                                 style: style,
                               ),
                             ],
@@ -535,7 +598,10 @@ class _DetailMovieScreenState extends ConsumerState<DetailMovieScreen> {
                                 Icons.calendar_month_outlined,
                                 color: Colors.amber,
                               ),
-                              Text("${widget.movie.releaseDate}", style: style),
+                              Text(
+                                "${widget.detailMovie.movie.releaseDate}",
+                                style: style,
+                              ),
                             ],
                           ),
                         ],
@@ -564,7 +630,7 @@ class _DetailMovieScreenState extends ConsumerState<DetailMovieScreen> {
                       ),
                     ),
                     Text(
-                      "${widget.movie.description}",
+                      "${widget.detailMovie.movie.description}",
                       style: const TextStyle(
                         fontSize: textfontSizeApp,
                         fontWeight: fontWeightNormal,
@@ -584,85 +650,7 @@ class _DetailMovieScreenState extends ConsumerState<DetailMovieScreen> {
 
   Widget buildShowRoomMovie(Cinema cinema, Room room) {
     return customElevatedButtonBgTransparent(
-      () async {
-        try {
-          Get.dialog(
-            Center(child: circularProgress),
-            barrierDismissible: false,
-          );
-
-          final navigator = Navigator.of(context);
-
-          final movieRoom = movieRooms.firstWhere(
-            (mr) =>
-                mr.idMovie == movie.idMovie && mr.idRoom.idRoom == room.idRoom,
-          );
-
-          final data = await ref
-              .read(holdingSeatServiceProvider)
-              .getSelectedSeat(movieRoom.idMovieRoom!);
-
-          final dataBooked = await ref
-              .read(orderServiceProvider)
-              .getBooked(room.idRoom!, movie.idMovie!);
-
-          if (Get.isDialogOpen == true) {
-            Get.back();
-          }
-
-          if (!data["success"]) {
-            showSnackbar(
-              title: "Tài khoản",
-              message: data["message"],
-              type: "error",
-              func: () => navigator.push(
-                MaterialPageRoute(builder: (_) => LoginPage()),
-              ),
-            );
-            return;
-          }
-
-          if (!dataBooked["success"]) {
-            showSnackbar(
-              title: "Ghế",
-              message: dataBooked["message"],
-              type: "error",
-            );
-            return;
-          }
-
-          final seatUser = data["data"]["seatUser"] != null
-              ? HoldingSeat.fromJson(data["data"]["seatUser"])
-              : null;
-
-          final List<String> seatsDiff = (data["data"]["seatsDiff"] as List)
-              .map((s) => s.toString())
-              .toList();
-
-          final List<String> bookedSeat = (dataBooked["data"]["booked"] as List)
-              .map((s) => s.toString())
-              .toList();
-
-          navigator.push(
-            MaterialPageRoute(
-              builder: (_) => BookingPage(
-                movie: movie,
-                movieRoom: movieRoom,
-                cinema: cinema,
-                room: room,
-                seatUser: seatUser,
-                seatsDiff: seatsDiff,
-                booked: bookedSeat,
-              ),
-            ),
-          );
-        } catch (error) {
-          if (Get.isDialogOpen == true) {
-            Get.back();
-          }
-          showSnackbar(title: "Lỗi hệ thống", message: "$error", type: "error");
-        }
-      },
+      () => funcHanldeToBooking(room, cinema),
 
       Text(
         "Phòng ${room.roomNumber}",
@@ -763,7 +751,7 @@ class _DetailMovieScreenState extends ConsumerState<DetailMovieScreen> {
     return AppBar(
       centerTitle: false,
       title: currentSegment == 0
-          ? Text(widget.movie.name!, style: tilteStyleApp)
+          ? Text(widget.detailMovie.movie.name!, style: tilteStyleApp)
           : null,
       backgroundColor: Colors.transparent,
       iconTheme: const IconThemeData(color: colorTextApp),
@@ -775,7 +763,7 @@ class _DetailMovieScreenState extends ConsumerState<DetailMovieScreen> {
     final slidingSegments = buildSlidingSegments();
 
     return Scaffold(
-      appBar: buildAppBar(),  
+      appBar: buildAppBar(),
       extendBodyBehindAppBar: true,
       backgroundColor: bgColorApp,
 
@@ -783,7 +771,7 @@ class _DetailMovieScreenState extends ConsumerState<DetailMovieScreen> {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            ...backgroundApp(widget.movie.urlImage!),
+            ...backgroundApp(widget.detailMovie.movie.urlImage!),
 
             if (currentSegment == 0) ...[
               SafeArea(

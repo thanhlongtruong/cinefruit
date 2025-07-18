@@ -224,12 +224,35 @@ class UserService {
       };
     }
   }
-  Future<Map<String, dynamic>> updateVerificationEmail(String email) async {
+
+  Future<Map<String, dynamic>> updateVerificationEmail(String email, int codeVerify ) async {
     try {
       final response = await dio.post(
         "/user/update/verification",
-        data: {"email": email},
+        data: {"email": email,"code_verify": codeVerify},
       );
+
+      return {
+        "success": response.statusCode == 200,
+        "message": response.data["message"],
+        "data": response.statusCode == 200 ? response.data : null,
+      };
+    } on DioException catch (error) {
+      String errorMessage = getDioErrorMessage(error);
+
+      return {"success": false, "message": errorMessage, "data": null};
+    } catch (e) {
+      return {
+        "success": false,
+        "message": "Lỗi không xác định: ${e.toString()}",
+        "data": null,
+      };
+    }
+  }
+
+  Future<Map<String, dynamic>> forgotPassword(Object data) async {
+    try {
+      final response = await dio.post("/user/forgot-password", data: data);
 
       return {
         "success": response.statusCode == 200,

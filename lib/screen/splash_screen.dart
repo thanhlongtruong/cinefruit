@@ -1,20 +1,18 @@
 import "dart:async";
-import "package:ceni_fruit/config/show_snack_bar.dart";
+import 'package:animated_splash_screen/animated_splash_screen.dart';
 import "package:ceni_fruit/config/widget_loading_error.dart";
+import "package:ceni_fruit/home_creen.dart";
 import "package:ceni_fruit/provider/movie_hot_provider.dart";
 import "package:ceni_fruit/provider/movie_provider.dart";
-import "package:ceni_fruit/provider/payment_method_provider.dart";
 import "package:ceni_fruit/provider/user_profile_provider.dart";
 import 'package:flutter/services.dart';
 import 'package:get/get.dart';
-
-import "package:ceni_fruit/config/const.dart";
-import "package:ceni_fruit/home_creen.dart";
+// ignore: depend_on_referenced_packages
+import 'package:page_transition/page_transition.dart';
 import "package:ceni_fruit/provider/cinema_provider.dart";
 import "package:flutter/material.dart";
 import "package:flutter_riverpod/flutter_riverpod.dart";
 import '../config/path_images.dart';
-import '../config/styles.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -27,15 +25,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      preloadProvider();
-    });
   }
 
-  Future<void> preloadProvider() async {
+  Future<Widget> preloadProvider() async {
     try {
-      Get.dialog(Center(child: circularProgress), barrierDismissible: false);
-
       final movieHotNotifier = ref.read(movieHotProvider.notifier);
       final movieNotifier = ref.read(movieProvider.notifier);
       final cinemaNotifier = ref.read(cinemaProvider.notifier);
@@ -51,24 +44,14 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
       await Future.wait(futures);
 
-      if (Get.isDialogOpen == true) {
-        Get.back();
-      }
-      Future.delayed(const Duration(milliseconds: 500), () {
-        if (mounted) {
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(builder: (_) => const HomeCreen()),
-            (route) => false,
-          );
-        }
-      });
+      await Future.delayed(const Duration(milliseconds: 500));
+
+      return const HomeCreen();
     } catch (error, stackTrace) {
       if (Get.isDialogOpen == true) {
         Get.back();
       }
-      buildErrorScreen(error, stackTrace);
-      return;
+      return buildErrorScreen(error, stackTrace);
     }
   }
 
@@ -81,17 +64,15 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         statusBarIconBrightness: Brightness.dark,
       ),
     );
-    return Scaffold(
-      backgroundColor: colorTextApp,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Hero(tag: "logo", child: Image.asset(cinefruit)),
-            const SizedBox(height: spacingBig),
-          ],
-        ),
-      ),
+    return AnimatedSplashScreen.withScreenFunction(
+      screenFunction: preloadProvider,
+      splash: "assets/images/cinefruit_netflix_smooth.gif",
+      backgroundColor: Colors.black,
+      pageTransitionType: PageTransitionType.fade,
+      splashTransition: SplashTransition.sizeTransition,
+      splashIconSize: 400,
+      centered: true,
+      duration: 3100,
     );
   }
 }

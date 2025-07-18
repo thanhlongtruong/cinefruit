@@ -118,12 +118,9 @@ class OrderService {
     }
   }
 
-  Future<Map<String, dynamic>> updatePaymentMethod(Object data) async {
+  Future<Map<String, dynamic>> updatePayUrl(Object data) async {
     try {
-      final response = await dio.post(
-        "/order/update/payment_method",
-        data: data,
-      );
+      final response = await dio.post("/order/update/payUrl", data: data);
 
       return {
         "success": response.statusCode == 200,

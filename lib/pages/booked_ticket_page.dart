@@ -1,5 +1,6 @@
 import 'dart:ui';
 
+import 'package:ceni_fruit/Router/navigation_hepler.dart';
 import 'package:ceni_fruit/config/background_app.dart';
 import 'package:ceni_fruit/config/const.dart';
 import 'package:ceni_fruit/config/convert_time.dart';
@@ -8,16 +9,15 @@ import 'package:ceni_fruit/config/style_button.dart';
 import 'package:ceni_fruit/config/styles.dart';
 import 'package:ceni_fruit/config/widget_not_loggedin.dart';
 import 'package:ceni_fruit/config/widget_loading_error.dart';
+import 'package:ceni_fruit/model/booking.dart';
 import 'package:ceni_fruit/model/cinema.dart';
 import 'package:ceni_fruit/model/food_drink.dart';
-import 'package:ceni_fruit/model/holding_seat.dart';
 import 'package:ceni_fruit/model/movie.dart';
 import 'package:ceni_fruit/model/movie_room.dart';
+import 'package:ceni_fruit/model/params_pay_page.dart';
 import 'package:ceni_fruit/model/payment_method.dart';
 import 'package:ceni_fruit/model/room.dart';
 import 'package:ceni_fruit/model/ticket.dart';
-import 'package:ceni_fruit/pages/booking_page.dart';
-import 'package:ceni_fruit/pages/pay_page.dart';
 import 'package:ceni_fruit/provider/holding_seat_provider.dart';
 import 'package:ceni_fruit/provider/movie_hot_provider.dart';
 import 'package:ceni_fruit/provider/order_provider.dart';
@@ -183,30 +183,26 @@ class _BookedTicketPageState extends ConsumerState<BookedTicketPage> {
                             List<String> listWithoutNulls = selectedSeats
                                 .whereType<String>()
                                 .toList();
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => PayPage(
-                                  movie: movie,
-                                  cinema: cinema,
-                                  room: room,
-                                  movieRoom: movieRoom,
-                                  paymentMethods: paymentMethodState,
-                                  selectedTime: orderWithTicket.order.time!,
-                                  totalChooseFoodDrink: totalChooseFoodDrink,
-                                  price: orderWithTicket.order.price!,
-                                  selectedSeats: listWithoutNulls,
-                                  seatUser: null,
-                                  typeInformationThisPage:
-                                      orderWithTicket.order.expiredAt != null &&
-                                          time != null
-                                      ? "page_payment"
-                                      : "review",
-                                  selectedPaymentMethod:
-                                      orderWithTicket.order.paymentMethod!,
-                                ),
-                              ),
+
+                            ParamsPayPage params = ParamsPayPage(
+                              movie: movie,
+                              cinema: cinema,
+                              room: room,
+                              selectedTime: orderWithTicket.order.time!,
+                              movieRoom: movieRoom,
+                              paymentMethods: paymentMethodState,
+                              seatUser: null,
+                              totalChooseFoodDrink: totalChooseFoodDrink,
+                              selectedSeats: listWithoutNulls,
+                              price: orderWithTicket.order.price!,
+                              typeInformationThisPage:
+                                  orderWithTicket.order.expiredAt != null &&
+                                      time != null
+                                  ? "page_payment"
+                                  : "review",
                             );
+
+                            NavigationHelper.goToPay(params: params);
                           },
                           Text(
                             orderWithTicket.order.expiredAt == null &&
@@ -314,6 +310,7 @@ class _BookedTicketPageState extends ConsumerState<BookedTicketPage> {
         child: ClipRRect(
           borderRadius: borderRadiusCardBig,
           child: Stack(
+            // 0993945045
             children: [
               BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 45, sigmaY: 45),
@@ -395,20 +392,17 @@ class _BookedTicketPageState extends ConsumerState<BookedTicketPage> {
                       children: [
                         customElevatedButtonBgTransparent(
                           () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (_) => BookingPage(
-                                  movie: movie,
-                                  cinema: cinema,
-                                  room: room,
-                                  movieRoom: movieRoom,
-                                  seatUser: holdingSeatUserAndDiff.holdingSeat,
-                                  seatsDiff: holdingSeatUserAndDiff.seatsDiff,
-                                  booked: [],
-                                ),
-                              ),
+                            Booking params = Booking(
+                              movie: movie,
+                              movieRoom: movieRoom,
+                              cinema: cinema,
+                              room: room,
+                              seatUser: holdingSeatUserAndDiff.holdingSeat,
+                              seatsDiff: holdingSeatUserAndDiff.seatsDiff,
+                              booked: [],
                             );
+
+                            NavigationHelper.goToBooking(booking: params);
                           },
                           Text(
                             "Tiếp tục",
@@ -523,7 +517,7 @@ class _BookedTicketPageState extends ConsumerState<BookedTicketPage> {
                       ),
                       textAlign: TextAlign.center,
                     ),
-                    notLoggedinYet(context),
+                    notLoggedinYet(context, "/homescreen_booked"),
                   ],
                 ),
               ),
@@ -572,6 +566,7 @@ class _BookedTicketPageState extends ConsumerState<BookedTicketPage> {
           title: const Text("Lịch sử vé", style: tilteStyleApp),
           backgroundColor: Colors.transparent,
           iconTheme: IconThemeData(color: colorTextApp),
+          centerTitle: false,
         ),
         backgroundColor: bgColorApp,
         body: Stack(
@@ -593,14 +588,15 @@ class _BookedTicketPageState extends ConsumerState<BookedTicketPage> {
                   physics: const AlwaysScrollableScrollPhysics(),
                   children: [
                     if (holdingSeatUserAndDiff?.holdingSeat != null &&
-                        dataOrderWithTicket!.every(
-                          (o) => o.order.expiredAt == null,
+                        dataOrderWithTicket!.any(
+                          (o) => o.order.expiredAt != null,
                         ))
                       buildItem(
                         holdingSeatUserAndDiff,
                         paymentMethodState ?? [],
                       ),
-                    if (dataOrderWithTicket == null)
+
+                    if (dataOrderWithTicket!.isEmpty)
                       SizedBox(
                         height: MediaQuery.of(context).size.height / 2,
                         child: Center(

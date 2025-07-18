@@ -1,3 +1,4 @@
+import 'package:ceni_fruit/Router/navigation_hepler.dart';
 import 'package:ceni_fruit/config/background_app.dart';
 import 'package:ceni_fruit/config/const.dart';
 import 'package:ceni_fruit/config/show_snack_bar.dart';
@@ -6,12 +7,9 @@ import 'package:ceni_fruit/config/convert_time.dart';
 import 'package:ceni_fruit/config/catch_network_image.dart';
 import 'package:ceni_fruit/config/style_login_register.dart';
 import 'package:ceni_fruit/curvedclipper.dart';
-import 'package:ceni_fruit/model/cinema.dart';
-import 'package:ceni_fruit/model/movie.dart';
-import 'package:ceni_fruit/model/movie_room.dart';
-import 'package:ceni_fruit/model/room.dart';
+import 'package:ceni_fruit/model/booking.dart';
+import 'package:ceni_fruit/model/order_food_drink.dart';
 import 'package:ceni_fruit/model/holding_seat.dart';
-import 'package:ceni_fruit/pages/order_food_drink.dart';
 import 'package:ceni_fruit/provider/holding_seat_provider.dart';
 import 'package:ceni_fruit/provider/order_provider.dart';
 import 'package:ceni_fruit/service/currency_exchange_service.dart';
@@ -22,24 +20,9 @@ import 'package:get/get.dart';
 import 'package:slide_countdown/slide_countdown.dart';
 
 class BookingPage extends ConsumerStatefulWidget {
-  final Movie movie;
-  final MovieRoom movieRoom;
-  final Cinema cinema;
-  final Room room;
-  final HoldingSeat? seatUser;
-  final List<String> seatsDiff;
-  final List<String> booked;
+  final Booking booking;
 
-  const BookingPage({
-    super.key,
-    required this.movie,
-    required this.movieRoom,
-    required this.cinema,
-    required this.room,
-    required this.seatUser,
-    required this.seatsDiff,
-    required this.booked,
-  });
+  const BookingPage({super.key, required this.booking});
 
   @override
   ConsumerState<BookingPage> createState() => _BookingPageState();
@@ -58,16 +41,17 @@ class _BookingPageState extends ConsumerState<BookingPage> {
   @override
   void initState() {
     super.initState();
-    if (widget.movieRoom.times != null && widget.movieRoom.times!.isNotEmpty) {
-      selectedTime = widget.movieRoom.times!.first;
+    if (widget.booking.movieRoom.times != null &&
+        widget.booking.movieRoom.times!.isNotEmpty) {
+      selectedTime = widget.booking.movieRoom.times!.first;
     }
 
-    seatUser = widget.seatUser;
+    seatUser = widget.booking.seatUser;
     selectedSeats = seatUser?.selectedSeat ?? [];
-    seatsDiff = widget.seatsDiff;
-    booked = widget.booked;
+    seatsDiff = widget.booking.seatsDiff;
+    booked = widget.booking.booked;
     price = formatCurrencyVND(
-      currencyVND(widget.movie.price!) * selectedSeats.length,
+      currencyVND(widget.booking.movie.price!) * selectedSeats.length,
     );
   }
 
@@ -87,7 +71,7 @@ class _BookingPageState extends ConsumerState<BookingPage> {
     final time = convertTime(seatUser?.expiredAt ?? "");
     return AppBar(
       centerTitle: false,
-      title: Text("${widget.cinema.name}", style: tilteStyleApp),
+      title: Text("${widget.booking.cinema.name}", style: tilteStyleApp),
       backgroundColor: Colors.transparent,
       iconTheme: IconThemeData(color: colorTextApp),
       bottom: seatUser != null && time != null
@@ -140,7 +124,9 @@ class _BookingPageState extends ConsumerState<BookingPage> {
                           );
                           final data = await ref
                               .read(holdingSeatServiceProvider)
-                              .getSelectedSeat(widget.movieRoom.idMovieRoom!);
+                              .getSelectedSeat(
+                                widget.booking.movieRoom.idMovieRoom!,
+                              );
 
                           if (Get.isDialogOpen == true) {
                             Get.back();
@@ -161,7 +147,7 @@ class _BookingPageState extends ConsumerState<BookingPage> {
                             seatsDiff = [];
 
                             price = formatCurrencyVND(
-                              currencyVND(widget.movie.price!) *
+                              currencyVND(widget.booking.movie.price!) *
                                   selectedSeats.length,
                             );
                           });
@@ -192,7 +178,7 @@ class _BookingPageState extends ConsumerState<BookingPage> {
       appBar: appBar(),
       body: Stack(
         children: [
-          ...backgroundApp(widget.movie.urlImage!),
+          ...backgroundApp(widget.booking.movie.urlImage!),
 
           SafeArea(
             child: Padding(
@@ -268,7 +254,7 @@ class _BookingPageState extends ConsumerState<BookingPage> {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         Text(
-          "${widget.movie.name}",
+          "${widget.booking.movie.name}",
           style: const TextStyle(
             fontSize: textfontSizeTitleAppBar,
             fontWeight: fontWeightSemiBold,
@@ -314,7 +300,7 @@ class _BookingPageState extends ConsumerState<BookingPage> {
                   ),
                 ),
 
-                items: (widget.movieRoom.times ?? []).map((time) {
+                items: (widget.booking.movieRoom.times ?? []).map((time) {
                   return DropdownMenuItem<String>(
                     value: time,
                     child: Text(
@@ -341,8 +327,8 @@ class _BookingPageState extends ConsumerState<BookingPage> {
   }
 
   Widget buildSingleSeat() {
-    int rowCount = widget.room.rowQuantity!;
-    int columnCount = widget.room.colQuantity!;
+    int rowCount = widget.booking.room.rowQuantity!;
+    int columnCount = widget.booking.room.colQuantity!;
     double sizeSeat = 25;
 
     return SingleChildScrollView(
@@ -426,20 +412,20 @@ class _BookingPageState extends ConsumerState<BookingPage> {
                                     .read(holdingSeatServiceProvider)
                                     .chooseSeat(
                                       idMovieRoom:
-                                          widget.movieRoom.idMovieRoom!,
+                                          widget.booking.movieRoom.idMovieRoom!,
                                       seat: seatCode,
                                     );
                                 final dataa = await ref
                                     .read(holdingSeatServiceProvider)
                                     .getSelectedSeat(
-                                      widget.movieRoom.idMovieRoom!,
+                                      widget.booking.movieRoom.idMovieRoom!,
                                     );
 
                                 final dataBooked = await ref
                                     .read(orderServiceProvider)
                                     .getBooked(
-                                      widget.room.idRoom!,
-                                      widget.movie.idMovie!,
+                                      widget.booking.room.idRoom!,
+                                      widget.booking.movie.idMovie!,
                                     );
 
                                 await ref
@@ -456,7 +442,7 @@ class _BookingPageState extends ConsumerState<BookingPage> {
                                     selectedSeats = [];
                                     seatsDiff = [];
                                     price = formatCurrencyVND(
-                                      currencyVND(widget.movie.price!) *
+                                      currencyVND(widget.booking.movie.price!) *
                                           selectedSeats.length,
                                     );
                                   });
@@ -498,7 +484,7 @@ class _BookingPageState extends ConsumerState<BookingPage> {
                                           .map((s) => s.toString())
                                           .toList();
                                   price = formatCurrencyVND(
-                                    currencyVND(widget.movie.price!) *
+                                    currencyVND(widget.booking.movie.price!) *
                                         selectedSeats.length,
                                   );
                                 });
@@ -539,7 +525,7 @@ class _BookingPageState extends ConsumerState<BookingPage> {
                                   ? ClipRRect(
                                       borderRadius: borderRadiusButtonSmall,
                                       child: cachedNetworkImageConfig(
-                                        widget.movie.urlImage!,
+                                        widget.booking.movie.urlImage!,
                                         sizeSeat,
                                         sizeSeat,
                                         BoxFit.fill,
@@ -616,7 +602,7 @@ class _BookingPageState extends ConsumerState<BookingPage> {
               ? ClipRRect(
                   borderRadius: borderRadiusButtonSmall,
                   child: cachedNetworkImageConfig(
-                    widget.movie.urlImage!,
+                    widget.booking.movie.urlImage!,
                     28,
                     28,
                     BoxFit.fill,
@@ -659,21 +645,18 @@ class _BookingPageState extends ConsumerState<BookingPage> {
         ElevatedButton(
           onPressed: () {
             if (currencyVND(price) > 0 && selectedSeats.isNotEmpty) {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => OrderFoodDrink(
-                    movie: widget.movie,
-                    selectedSeats: selectedSeats,
-                    price: price,
-                    cinema: widget.cinema,
-                    room: widget.room,
-                    movieRoom: widget.movieRoom,
-                    time: selectedTime ?? "",
-                    seatUser: seatUser,
-                  ),
-                ),
+              ParamsOrderFoodDrink params = ParamsOrderFoodDrink(
+                movie: widget.booking.movie,
+                cinema: widget.booking.cinema,
+                room: widget.booking.room,
+                movieRoom: widget.booking.movieRoom,
+                selectedSeats: selectedSeats,
+                price: price,
+                time: selectedTime ?? "",
+                seatUser: seatUser,
               );
+
+              NavigationHelper.goToFoodDrinks(params: params);
             }
             return;
           },

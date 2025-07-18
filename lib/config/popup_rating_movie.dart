@@ -1,7 +1,7 @@
+import 'package:ceni_fruit/Router/navigation_hepler.dart';
 import 'package:ceni_fruit/config/const.dart';
 import 'package:ceni_fruit/config/show_snack_bar.dart';
 import 'package:ceni_fruit/config/styles.dart';
-import 'package:ceni_fruit/pages/login_page.dart';
 import 'package:ceni_fruit/provider/movie_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
@@ -32,20 +32,16 @@ Future<void> popupRatingMovie({
           insetPadding: EdgeInsets.all(spacingMedium),
           shape: RoundedRectangleBorder(borderRadius: borderRadiusCardSmall),
 
-          title: RichText(
-            text: TextSpan(
-              style: TextStyle(
-                fontWeight: fontWeightSemiBold,
-                color: hexColorTextBlack,
-                letterSpacing: letterSpacingSmall,
-                fontSize: textfontSizeTitleAppBar,
-              ),
-              children: [
-                TextSpan(text: "${detailCinemaState.movie.name} "),
-                TextSpan(text: "($score/10)", style: styleTextSpecial),
-              ],
+          title: Text(
+            "${detailCinemaState.movie.name}",
+            style: TextStyle(
+              fontWeight: fontWeightSemiBold,
+              color: hexColorTextBlack,
+              letterSpacing: letterSpacingSmall,
+              fontSize: textfontSizeTitleAppBar,
             ),
           ),
+
           titlePadding: const EdgeInsets.all(spacingMedium),
           contentPadding: const EdgeInsets.only(
             right: spacingMedium,
@@ -55,11 +51,12 @@ Future<void> popupRatingMovie({
           buttonPadding: const EdgeInsets.all(spacingMedium),
           content: RatingBar.builder(
             minRating: 0,
-            maxRating: 10,
-            itemCount: 10,
+            maxRating: 5,
+            itemCount: 5,
             allowHalfRating: true,
-            wrapAlignment: WrapAlignment.center,
-            itemSize: 30,
+            direction: Axis.horizontal,
+            wrapAlignment: WrapAlignment.spaceEvenly,
+            itemSize: 50,
             itemBuilder: (context, index) =>
                 const Icon(Icons.star_rounded, color: colorIcon),
             onRatingUpdate: (value) {
@@ -93,7 +90,6 @@ Future<void> popupRatingMovie({
                 onPressed: () async {
                   try {
                     Get.back();
-                    final navigator = Navigator.of(context);
 
                     Get.dialog(
                       Center(child: circularProgress),
@@ -120,8 +116,8 @@ Future<void> popupRatingMovie({
                           if (resultRatingMovie.containsKey("typeError") &&
                               resultRatingMovie["typeError"] ==
                                   "Chưa được xác minh") {
-                            navigator.push(
-                              MaterialPageRoute(builder: (_) => LoginPage()),
+                            NavigationHelper.goToLogin(
+                              returnRoute: '/detail_cinema',
                             );
                           }
                         },
