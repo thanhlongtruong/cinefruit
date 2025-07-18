@@ -44,7 +44,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
       await Future.wait(futures);
 
-      await Future.delayed(const Duration(milliseconds: 500));
+      await Future.delayed(const Duration(seconds: 1));
 
       return const HomeCreen();
     } catch (error, stackTrace) {
@@ -66,13 +66,16 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     );
     return AnimatedSplashScreen.withScreenFunction(
       screenFunction: preloadProvider,
-      splash: "assets/images/cinefruit_netflix_smooth.gif",
+      splash: Image.asset(
+        "assets/images/cinefruit_scare.png",
+        fit: BoxFit.contain,
+      ),
       backgroundColor: Colors.black,
       pageTransitionType: PageTransitionType.fade,
       splashTransition: SplashTransition.sizeTransition,
       splashIconSize: 400,
       centered: true,
-      duration: 3100,
+      duration: 1000,
     );
   }
 }
