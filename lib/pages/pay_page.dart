@@ -543,7 +543,9 @@ class _PayPageState extends ConsumerState<PayPage> {
                             widget.paramsPayPage.movieRoom.idMovieRoom,
                         "foodDrinks": foodDrinks,
                         "time": widget.paramsPayPage.selectedTime,
-                        "price": price,
+                        "price": selectedPaymentMethod == "Paypal"
+                            ? price
+                            : widget.paramsPayPage.price,
                         "paymentMethod": selectedPaymentMethod,
                         "selectedSeats": widget.paramsPayPage.selectedSeats,
                         "expiredAt": widget.paramsPayPage.seatUser?.expiredAt,
