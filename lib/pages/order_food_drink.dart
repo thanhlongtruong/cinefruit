@@ -177,13 +177,14 @@ class _OrderFoodDrinkState extends ConsumerState<OrderFoodDrink> {
   Widget buildCombo(List<FoodDrink> typeCombo) {
     return SingleChildScrollView(
       child: Column(
+        spacing: spacingBig,
         children: List.generate(typeCombo.length, (index) {
           final countSelected = selectedCombos
               .where((sc) => sc.idFoodDrink == typeCombo[index].idFoodDrink)
               .length;
 
           return Padding(
-            padding: const EdgeInsets.only(bottom: spacingBig),
+            padding: const EdgeInsets.only(bottom: spacingMedium),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               spacing: spacingMedium,
@@ -200,84 +201,81 @@ class _OrderFoodDrinkState extends ConsumerState<OrderFoodDrink> {
                 ),
 
                 Expanded(
-                  child: SizedBox(
-                    height: 150,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
-                      spacing: spacingMedium,
-                      children: [
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          spacing: spacingSmall,
-                          children: [
-                            Text(
-                              "${typeCombo[index].name}",
-                              style: const TextStyle(
-                                fontSize: textfontSizeApp,
-                                fontWeight: fontWeightMedium,
-                                color: colorTextApp,
-                                letterSpacing: letterSpacingSmall,
-                              ),
+                    spacing: spacingMedium,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        spacing: spacingSmall,
+                        children: [
+                          Text(
+                            "${typeCombo[index].name}",
+                            style: const TextStyle(
+                              fontSize: textfontSizeApp,
+                              fontWeight: fontWeightMedium,
+                              color: colorTextApp,
+                              letterSpacing: letterSpacingSmall,
                             ),
-                            Text(
-                              "${typeCombo[index].description}",
-                              style: const TextStyle(
-                                fontSize: textfontSizeNote,
-                                color: colorTextApp,
-                                letterSpacing: letterSpacingSmall,
-                                fontWeight: fontWeightNormal,
-                              ),
+                          ),
+                          Text(
+                            "${typeCombo[index].description}",
+                            style: const TextStyle(
+                              fontSize: textfontSizeNote,
+                              color: colorTextApp,
+                              letterSpacing: letterSpacingSmall,
+                              fontWeight: fontWeightNormal,
                             ),
-                            Text(
-                              "${typeCombo[index].price}",
-                              style: const TextStyle(
-                                fontSize: textfontSizeApp,
-                                color: colorTextApp,
-                                letterSpacing: letterSpacingSmall,
-                                fontWeight: fontWeightNormal,
-                              ),
+                          ),
+                          Text(
+                            "${typeCombo[index].price}",
+                            style: const TextStyle(
+                              fontSize: textfontSizeApp,
+                              color: colorTextApp,
+                              letterSpacing: letterSpacingSmall,
+                              fontWeight: fontWeightNormal,
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
+                      ),
 
-                        Row(
-                          spacing: spacingMedium,
-                          children: [
-                            buildButton(
-                              const Icon(
-                                Icons.remove,
-                                color: Colors.white,
-                                size: 18,
-                              ),
-                              typeCombo[index],
-                              "decrease",
+                      Row(
+                        spacing: spacingMedium,
+                        children: [
+                          buildButton(
+                            const Icon(
+                              Icons.remove,
+                              color: Colors.white,
+                              size: 18,
                             ),
+                            typeCombo[index],
+                            "decrease",
+                          ),
 
-                            Text(
-                              "$countSelected",
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: textfontSizeApp,
-                                fontWeight: fontWeightMedium,
-                                letterSpacing: letterSpacingSmall,
-                              ),
+                          Text(
+                            "$countSelected",
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: textfontSizeApp,
+                              fontWeight: fontWeightMedium,
+                              letterSpacing: letterSpacingSmall,
                             ),
+                          ),
 
-                            buildButton(
-                              const Icon(
-                                Icons.add_rounded,
-                                color: Colors.white,
-                                size: 18,
-                              ),
-                              typeCombo[index],
-                              "increase",
+                          buildButton(
+                            const Icon(
+                              Icons.add_rounded,
+                              color: Colors.white,
+                              size: 18,
                             ),
-                          ],
-                        ),
-                      ],
-                    ),
+                            typeCombo[index],
+                            "increase",
+                          ),
+                        ],
+                      ),
+                    ],
                   ),
                 ),
               ],
