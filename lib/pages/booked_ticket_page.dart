@@ -96,56 +96,52 @@ class _BookedTicketPageState extends ConsumerState<BookedTicketPage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (orderWithTicket.order.expiredAt != null && time != null)
-                      Row(
-                        children: [
-                          Text(
-                            "Sau",
-                            style: TextStyle(
-                              color: colorPaymentStatus,
-                              letterSpacing: letterSpacingSmall,
-                              fontWeight: fontWeightMedium,
-                              fontSize: textfontSizeApp,
-                            ),
+                      RichText(
+                        text: TextSpan(
+                          style: TextStyle(
+                            color: colorTextWarning,
+                            letterSpacing: letterSpacingSmall,
+                            fontWeight: fontWeightMedium,
+                            fontSize: textfontSizeApp,
                           ),
-                          SlideCountdown(
-                            key: ValueKey(orderWithTicket.order.expiredAt),
-                            icon: Icon(
-                              Icons.timer_outlined,
-                              size: iconfontSizeNormal,
-                              color: colorIcon,
+                          children: [
+                            const TextSpan(text: "Sau"),
+                            WidgetSpan(
+                              alignment: PlaceholderAlignment.middle,
+                              child: SlideCountdown(
+                                key: ValueKey(orderWithTicket.order.expiredAt),
+                                icon: Icon(
+                                  Icons.timer_outlined,
+                                  size: iconfontSizeNormal,
+                                  color: colorIcon,
+                                ),
+                                slideDirection: SlideDirection.up,
+                                decoration: BoxDecoration(
+                                  color: Colors.transparent,
+                                ),
+                                duration: Duration(
+                                  hours: time["hours"] ?? 0,
+                                  minutes: time["minutes"]!,
+                                  seconds: time["seconds"]!,
+                                ),
+                                style: TextStyle(
+                                  color: colorTextApp,
+                                  letterSpacing: letterSpacingSmall,
+                                  fontWeight: fontWeightMedium,
+                                  fontSize: textfontSizeApp,
+                                ),
+                                onDone: () async {
+                                  await ref
+                                      .read(getOrderWithTicketIdUser.notifier)
+                                      .loadTicket();
+                                },
+                              ),
                             ),
-                            slideDirection: SlideDirection.up,
-                            decoration: BoxDecoration(
-                              color: Colors.transparent,
-                            ),
-                            duration: Duration(
-                              hours: time["hours"] ?? 0,
-                              minutes: time["minutes"]!,
-                              seconds: time["seconds"]!,
-                            ),
-                            style: TextStyle(
-                              color: colorTextApp,
-                              letterSpacing: letterSpacingSmall,
-                              fontWeight: fontWeightMedium,
-                              fontSize: textfontSizeApp,
-                            ),
-                            onDone: () async {
-                              await ref
-                                  .read(getOrderWithTicketIdUser.notifier)
-                                  .loadTicket();
-                            },
-                          ),
-                          Text(
-                            "sẽ hoàn tác.",
-                            style: TextStyle(
-                              color: colorPaymentStatus,
-                              letterSpacing: letterSpacingSmall,
-                              fontWeight: fontWeightMedium,
-                              fontSize: textfontSizeApp,
-                            ),
-                          ),
-                        ],
+                            const TextSpan(text: "sẽ hủy thanh toán."),
+                          ],
+                        ),
                       ),
+
                     Text("Phim : ${movie.name}", style: style),
                     Text(
                       "Rạp : ${cinema.name} (${cinema.address})",
@@ -172,9 +168,35 @@ class _BookedTicketPageState extends ConsumerState<BookedTicketPage> {
                         ],
                       ),
                     ),
-                    Row(
+                    Wrap(
                       spacing: spacingMedium,
                       children: [
+                        if (holdingSeatUser?.holdingSeat != null &&
+                            orderWithTicket.order.expiredAt != null)
+                          customElevatedButtonBgTransparent(
+                            () {
+                              Booking params = Booking(
+                                movie: movie,
+                                movieRoom: movieRoom,
+                                cinema: cinema,
+                                room: room,
+                                seatUser: holdingSeatUser?.holdingSeat,
+                                seatsDiff: holdingSeatUser!.seatsDiff,
+                                booked: [],
+                              );
+
+                              NavigationHelper.goToBooking(booking: params);
+                            },
+                            Text(
+                              "Tiếp tục chọn ghế",
+                              style: TextStyle(
+                                fontWeight: fontWeightNormal,
+                                color: hexColorInformationSpecial,
+                                letterSpacing: letterSpacingSmall,
+                                fontSize: textfontSizeNote,
+                              ),
+                            ),
+                          ),
                         customElevatedButtonBgTransparent(
                           () {
                             final selectedSeats = tickets
@@ -208,7 +230,7 @@ class _BookedTicketPageState extends ConsumerState<BookedTicketPage> {
                             orderWithTicket.order.expiredAt == null &&
                                     time == null
                                 ? "Xem chi tiết"
-                                : "Thanh toán",
+                                : "Tiếp tục thanh toán",
                             style: TextStyle(
                               fontWeight: fontWeightNormal,
                               color: hexColorInformationSpecial,
@@ -310,7 +332,6 @@ class _BookedTicketPageState extends ConsumerState<BookedTicketPage> {
         child: ClipRRect(
           borderRadius: borderRadiusCardBig,
           child: Stack(
-            // 0993945045
             children: [
               BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 45, sigmaY: 45),
@@ -405,7 +426,7 @@ class _BookedTicketPageState extends ConsumerState<BookedTicketPage> {
                             NavigationHelper.goToBooking(booking: params);
                           },
                           Text(
-                            "Tiếp tục",
+                            "Tiếp tục chọn ghế",
                             style: TextStyle(
                               fontWeight: fontWeightNormal,
                               color: hexColorInformationSpecial,
@@ -588,8 +609,8 @@ class _BookedTicketPageState extends ConsumerState<BookedTicketPage> {
                   physics: const AlwaysScrollableScrollPhysics(),
                   children: [
                     if (holdingSeatUserAndDiff?.holdingSeat != null &&
-                        dataOrderWithTicket!.any(
-                          (o) => o.order.expiredAt != null,
+                        dataOrderWithTicket!.every(
+                          (o) => o.order.expiredAt == null,
                         ))
                       buildItem(
                         holdingSeatUserAndDiff,

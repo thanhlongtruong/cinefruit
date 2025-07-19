@@ -286,7 +286,7 @@ class _DetailMovieScreenState extends ConsumerState<DetailMovieScreen> {
   handleShowList(String type) {
     bool cinemaAndArea = type == "area" ? true : false;
     var textStyle = TextStyle(
-      color: colorTextApp,
+      color: hexColorTextBlack,
       fontSize: textfontSizeTitleAppBar,
       fontWeight: FontWeight.bold,
     );
@@ -325,34 +325,87 @@ class _DetailMovieScreenState extends ConsumerState<DetailMovieScreen> {
             ? {}
             : showCupertinoModalPopup(
                 context: context,
-                builder: (_) => Expanded(
-                  child: Align(
-                    alignment: Alignment.bottomCenter,
-                    child: SizedBox(
-                      height: 350,
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 3, sigmaY: 3),
-                        child: CupertinoPicker(
-                          backgroundColor: Colors.transparent,
-                          itemExtent: 40,
-                          offAxisFraction: -0.8,
-                          diameterRatio: 1,
-                          squeeze: 1,
-                          scrollController: FixedExtentScrollController(
-                            initialItem: cinemaAndArea
-                                ? selectArea
-                                : selectCinema,
-                          ),
-                          onSelectedItemChanged: (index) =>
-                              handleFillterCinemas(index, cinemaAndArea),
-                          children: handleShowList(type),
+                builder: (_) => CupertinoActionSheet(
+                  actions: [
+                    SizedBox(
+                      height: 300,
+                      child: CupertinoPicker(
+                        backgroundColor: colorTextApp,
+                        itemExtent: 64,
+                        selectionOverlay:
+                            CupertinoPickerDefaultSelectionOverlay(
+                              background: CupertinoColors.activeBlue
+                                  .withOpacity(0.2),
+                            ),
+                        scrollController: FixedExtentScrollController(
+                          initialItem: cinemaAndArea
+                              ? selectArea
+                              : selectCinema,
                         ),
+                        onSelectedItemChanged: (index) =>
+                            handleFillterCinemas(index, cinemaAndArea),
+                        children: handleShowList(type),
                       ),
                     ),
+                  ],
+                  cancelButton: CupertinoActionSheetAction(
+                    isDefaultAction: true,
+                    isDestructiveAction: true,
+                    onPressed: () => Navigator.pop(context),
+                    child: Text("Quay lại"),
                   ),
                 ),
               ),
       ),
+      // child: CupertinoButton(
+      //   color: Colors.transparent,
+      //   padding: EdgeInsets.zero,
+      //   child: Text(
+      //     handleShowName(type),
+      //     overflow: TextOverflow.ellipsis,
+      //     maxLines: 1,
+      //     textAlign: TextAlign.center,
+      //     style: const TextStyle(
+      //       color: colorTextApp,
+      //       fontSize: textfontSizeApp,
+      //       fontWeight: fontWeightMedium,
+      //       letterSpacing: letterSpacingSmall,
+      //     ),
+      //   ),
+      //   onPressed: () =>
+      //       ((!cinemaAndArea && fillterCinemas.isEmpty) ||
+      //           (cinemaAndArea && cinemasArea.isEmpty))
+      //       ? {}
+      //       : showCupertinoModalPopup(
+      //           context: context,
+      //           builder: (_) => Expanded(
+      //             child: Align(
+      //               alignment: Alignment.bottomCenter,
+      //               child: SizedBox(
+      //                 height: 350,
+      //                 child: BackdropFilter(
+      //                   filter: ImageFilter.blur(sigmaX: 3, sigmaY: 3),
+      //                   child: CupertinoPicker(
+      //                     backgroundColor: colorTextApp,
+      //                     itemExtent: 40,
+      //                     offAxisFraction: -0.8,
+      //                     diameterRatio: 1,
+      //                     squeeze: 1,
+      //                     scrollController: FixedExtentScrollController(
+      //                       initialItem: cinemaAndArea
+      //                           ? selectArea
+      //                           : selectCinema,
+      //                     ),
+      //                     onSelectedItemChanged: (index) =>
+      //                         handleFillterCinemas(index, cinemaAndArea),
+      //                     children: handleShowList(type),
+      //                   ),
+      //                 ),
+      //               ),
+      //             ),
+      //           ),
+      //         ),
+      // ),
     );
   }
 

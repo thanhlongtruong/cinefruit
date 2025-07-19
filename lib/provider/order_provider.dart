@@ -1,6 +1,7 @@
 import 'package:ceni_fruit/config/const.dart';
 import 'package:ceni_fruit/model/order.dart';
 import 'package:ceni_fruit/model/ticket.dart';
+import 'package:ceni_fruit/provider/holding_seat_provider.dart';
 import 'package:ceni_fruit/service/order_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -19,8 +20,10 @@ final getOrderWithTicketIdUser =
 class GetOrderWithTicket {
   Order order;
   List<Ticket> tickets;
-
-  GetOrderWithTicket({required this.order, required this.tickets});
+  GetOrderWithTicket({
+    required this.order,
+    required this.tickets,
+  });
 }
 
 class OrderProvider
