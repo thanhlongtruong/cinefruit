@@ -8,6 +8,7 @@ import 'package:ceni_fruit/config/styles.dart';
 import 'package:ceni_fruit/model/params_pay_page.dart';
 import 'package:ceni_fruit/model/holding_seat.dart';
 import 'package:ceni_fruit/model/payment_method.dart';
+import 'package:ceni_fruit/provider/holding_seat_provider.dart';
 import 'package:ceni_fruit/provider/order_provider.dart';
 import 'package:ceni_fruit/provider/payment_method_provider.dart';
 import 'package:ceni_fruit/provider/paypal_provider.dart';
@@ -242,7 +243,7 @@ class _PayPageState extends ConsumerState<PayPage> {
                           maxLines: 2,
                         ),
                         Text(
-                          "Thời lượng: ${widget.paramsPayPage.movie.duration}",
+                          "Thời lượng: ${widget.paramsPayPage.movie.duration} phút",
                           style: TextStyle(
                             color: hexColorTextBlack,
                             letterSpacing: letterSpacingSmall,
@@ -655,6 +656,10 @@ class _PayPageState extends ConsumerState<PayPage> {
                                 .read(getOrderWithTicketIdUser.notifier)
                                 .loadTicket();
 
+                            await ref
+                                .read(holdingSeatNofierProvider.notifier)
+                                .getHoldingSeatUser();
+
                             showSnackbar(
                               title: "Thanh toán",
                               message: resultUpdateTransaction["message"],
@@ -774,6 +779,9 @@ class _PayPageState extends ConsumerState<PayPage> {
                                 .read(getOrderWithTicketIdUser.notifier)
                                 .loadTicket();
 
+                            await ref
+                                .read(holdingSeatNofierProvider.notifier)
+                                .getHoldingSeatUser();
                             showSnackbar(
                               title: "Thanh toán",
                               message: resultUpdateTransaction["message"],
