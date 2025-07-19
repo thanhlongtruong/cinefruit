@@ -222,6 +222,15 @@ class _OrderFoodDrinkState extends ConsumerState<OrderFoodDrink> {
                               ),
                             ),
                             Text(
+                              "${typeCombo[index].description}",
+                              style: const TextStyle(
+                                fontSize: textfontSizeNote,
+                                color: colorTextApp,
+                                letterSpacing: letterSpacingSmall,
+                                fontWeight: fontWeightNormal,
+                              ),
+                            ),
+                            Text(
                               "${typeCombo[index].price}",
                               style: const TextStyle(
                                 fontSize: textfontSizeApp,

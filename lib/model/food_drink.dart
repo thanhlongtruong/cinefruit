@@ -5,6 +5,7 @@ class FoodDrink {
   bool? state;
   String? price;
   String? urlImage;
+  String? description;
 
   FoodDrink({
     required this.idFoodDrink,
@@ -13,6 +14,7 @@ class FoodDrink {
     required this.state,
     required this.price,
     required this.urlImage,
+    required this.description,
   });
 
   FoodDrink.fromJson(Map<String, dynamic> json) {
@@ -22,5 +24,6 @@ class FoodDrink {
     state = json["state"];
     price = json["price"];
     urlImage = json["urlImage"];
+    description = json["description"];
   }
 }

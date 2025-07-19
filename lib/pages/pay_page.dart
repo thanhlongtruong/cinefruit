@@ -355,7 +355,7 @@ class _PayPageState extends ConsumerState<PayPage> {
                       spacing: spacingMedium,
                       children: [
                         Text(
-                          "${index + 1} : ${widget.paramsPayPage.totalChooseFoodDrink[index]["id"].name} - ${widget.paramsPayPage.totalChooseFoodDrink[index]["id"].price} VND x ${widget.paramsPayPage.totalChooseFoodDrink[index]["quantity"]}",
+                          "${index + 1} : ${widget.paramsPayPage.totalChooseFoodDrink[index]["id"].name} (${widget.paramsPayPage.totalChooseFoodDrink[index]["id"].description}) - ${widget.paramsPayPage.totalChooseFoodDrink[index]["id"].price} VND x ${widget.paramsPayPage.totalChooseFoodDrink[index]["quantity"]}",
                           style: TextStyle(
                             color: colorTextApp,
                             letterSpacing: letterSpacingSmall,
