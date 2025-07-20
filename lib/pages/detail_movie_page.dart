@@ -1,5 +1,3 @@
-import 'dart:ui';
-
 import 'package:ceni_fruit/Router/navigation_hepler.dart';
 import 'package:ceni_fruit/config/const.dart';
 import 'package:ceni_fruit/config/day_of_cinema.dart';
@@ -16,7 +14,6 @@ import 'package:ceni_fruit/model/holding_seat.dart';
 import 'package:ceni_fruit/model/movie.dart';
 import 'package:ceni_fruit/model/movie_room.dart';
 import 'package:ceni_fruit/model/room.dart';
-import 'package:ceni_fruit/provider/cinema_provider.dart';
 import 'package:ceni_fruit/provider/holding_seat_provider.dart';
 import 'package:ceni_fruit/provider/order_provider.dart';
 import 'package:ceni_fruit/provider/movie_room_provider.dart';
@@ -604,16 +601,9 @@ class _DetailMovieScreenState extends ConsumerState<DetailMovieScreen> {
                               ),
                               GestureDetector(
                                 onTap: () async {
-                                  DetailCinemaState detailCinemaState =
-                                      DetailCinemaState(
-                                        cinema: null,
-                                        movieRooms: movieRooms,
-                                        movie: movie,
-                                        rooms: rooms,
-                                      );
                                   await popupRatingMovie(
                                     ref: ref,
-                                    detailCinemaState: detailCinemaState,
+                                    movie: movie,
                                     onScoreChanged: (value) {
                                       setState(() {
                                         score = value;

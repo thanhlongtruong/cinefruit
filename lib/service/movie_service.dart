@@ -63,11 +63,11 @@ class MovieService {
     }
   }
 
-  Future<Map<String, dynamic>> ratingMovie(String idMovieRoom, double score) async {
+  Future<Map<String, dynamic>> ratingMovie(String idMovie, double score) async {
     try {
       final response = await dio.post(
         "/rate_movie/update/rate",
-        data: {"idMovieRoom": idMovieRoom, "score": score},
+        data: {"idMovie": idMovie, "score": score},
       );
       return {
         "success": response.statusCode == 200,

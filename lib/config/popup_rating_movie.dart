@@ -2,6 +2,7 @@ import 'package:ceni_fruit/Router/navigation_hepler.dart';
 import 'package:ceni_fruit/config/const.dart';
 import 'package:ceni_fruit/config/show_snack_bar.dart';
 import 'package:ceni_fruit/config/styles.dart';
+import 'package:ceni_fruit/model/movie.dart';
 import 'package:ceni_fruit/provider/movie_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
@@ -17,7 +18,7 @@ const style = TextStyle(
 
 Future<void> popupRatingMovie({
   required WidgetRef ref,
-  required detailCinemaState,
+  required Movie movie,
   required Function(double) onScoreChanged,
   required VoidCallback getMovieDate,
 }) async {
@@ -32,14 +33,28 @@ Future<void> popupRatingMovie({
           insetPadding: EdgeInsets.all(spacingMedium),
           shape: RoundedRectangleBorder(borderRadius: borderRadiusCardSmall),
 
-          title: Text(
-            "${detailCinemaState.movie.name}",
-            style: TextStyle(
-              fontWeight: fontWeightSemiBold,
-              color: hexColorTextBlack,
-              letterSpacing: letterSpacingSmall,
-              fontSize: textfontSizeTitleAppBar,
-            ),
+          title: Column(
+            spacing: spacingSmall,
+            children: [
+              Text(
+                "${movie.name}",
+                style: TextStyle(
+                  fontWeight: fontWeightSemiBold,
+                  color: hexColorTextBlack,
+                  letterSpacing: letterSpacingSmall,
+                  fontSize: textfontSizeTitleAppBar,
+                ),
+              ),
+              Text(
+                "Số người đã đánh giá : ${movie.rateCount}",
+                style: TextStyle(
+                  fontWeight: fontWeightNormal,
+                  color: hexColorTextBlack.withOpacity(0.8),
+                  letterSpacing: letterSpacingSmall,
+                  fontSize: textfontSizeNote,
+                ),
+              ),
+            ],
           ),
 
           titlePadding: const EdgeInsets.all(spacingMedium),
@@ -96,12 +111,9 @@ Future<void> popupRatingMovie({
                       barrierDismissible: false,
                     );
 
-                    final movieRoom = detailCinemaState.movieRooms.firstWhere(
-                      (mr) => mr.idMovie == detailCinemaState.movie.idMovie,
-                    );
                     final resultRatingMovie = await ref
                         .read(movieServiceProvider)
-                        .ratingMovie(movieRoom.idMovieRoom!, score);
+                        .ratingMovie(movie.idMovie!, score);
 
                     if (Get.isDialogOpen == true) {
                       Get.back();

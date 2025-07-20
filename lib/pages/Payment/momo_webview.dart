@@ -25,7 +25,7 @@ class _MomoWebviewState extends ConsumerState<MomoWebview> {
           onNavigationRequest: (NavigationRequest request) {
             final url = request.url;
             final navigator = Navigator.of(context);
-            print("url: $url");
+       
             // NGUYEN VAN A	9704 0000 0000 0018	03/07	OTP	Thành công
             //NGUYEN VAN A	4111 1111 1111 1111	05/26	111	No OTP	Card Successful
             try {

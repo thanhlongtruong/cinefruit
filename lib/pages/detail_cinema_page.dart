@@ -297,7 +297,7 @@ class _DetailCinemaPageState extends ConsumerState<DetailCinemaPage> {
                                 onTap: () async {
                                   await popupRatingMovie(
                                     ref: ref,
-                                    detailCinemaState: detailCinemaState,
+                                    movie: detailCinemaState.movie,
                                     onScoreChanged: (value) {
                                       setState(() {
                                         score = value;
