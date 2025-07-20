@@ -228,44 +228,52 @@ class _DetailMovieScreenState extends ConsumerState<DetailMovieScreen> {
   }
 
   Future<void> funcGetData() async {
-    Get.dialog(Center(child: circularProgress), barrierDismissible: false);
+    final navigator = Navigator.of(context);
+    try {
+      Get.dialog(Center(child: circularProgress), barrierDismissible: false);
 
-    await ref.read(movieRoomProvider(params).notifier).loadMovieRoomIdMovie();
-    final state = ref.read(movieRoomProvider(params));
+      await ref.read(movieRoomProvider(params).notifier).loadMovieRoomIdMovie();
+      final state = ref.read(movieRoomProvider(params));
 
-    if (Get.isDialogOpen == true) {
-      Get.back();
-    }
+      if (navigator.canPop()) {
+        navigator.pop();
+      }
 
-    if (state.hasError) {
-      showSnackbar(
-        title: "Lỗi hệ thống",
-        message: "${state.error}",
-        type: "error",
-      );
-    } else {
-      final value = state.value;
-      setState(() {
-        movie = value!.movie;
-        cinemas = value.cinemas;
-        movieRooms = value.movieRooms;
-        rooms = value.rooms;
-        fillterCinemas = value.cinemas;
-        cinemasArea = value.cinemas.isNotEmpty
-            ? value.cinemas
-                  .where((c) => c.area != null)
-                  .map((c) => c.area!)
-                  .toList()
-            : [];
-        if (fillterCinemas.isNotEmpty &&
-            fillterCinemas.first.name != "Tất cả rạp") {
-          fillterCinemas.insert(0, Cinema(name: "Tất cả rạp"));
-        }
-        if (cinemasArea.isNotEmpty && cinemasArea.first != "Toàn quốc") {
-          cinemasArea.insert(0, "Toàn quốc");
-          cinemasArea = cinemasArea.toSet().toList();
-        }
-      });
+      if (state.hasError) {
+        showSnackbar(
+          title: "Lỗi hệ thống",
+          message: "${state.error}",
+          type: "error",
+        );
+      } else {
+        final value = state.value;
+        setState(() {
+          movie = value!.movie;
+          cinemas = value.cinemas;
+          movieRooms = value.movieRooms;
+          rooms = value.rooms;
+          fillterCinemas = value.cinemas;
+          cinemasArea = value.cinemas.isNotEmpty
+              ? value.cinemas
+                    .where((c) => c.area != null)
+                    .map((c) => c.area!)
+                    .toList()
+              : [];
+          if (fillterCinemas.isNotEmpty &&
+              fillterCinemas.first.name != "Tất cả rạp") {
+            fillterCinemas.insert(0, Cinema(name: "Tất cả rạp"));
+          }
+          if (cinemasArea.isNotEmpty && cinemasArea.first != "Toàn quốc") {
+            cinemasArea.insert(0, "Toàn quốc");
+            cinemasArea = cinemasArea.toSet().toList();
+          }
+        });
+      }
+    } catch (error) {
+      if (navigator.canPop()) {
+        navigator.pop();
+      }
+      showSnackbar(title: "Lỗi hệ thống", message: "$error", type: "error");
     }
   }
 
@@ -354,55 +362,6 @@ class _DetailMovieScreenState extends ConsumerState<DetailMovieScreen> {
                 ),
               ),
       ),
-      // child: CupertinoButton(
-      //   color: Colors.transparent,
-      //   padding: EdgeInsets.zero,
-      //   child: Text(
-      //     handleShowName(type),
-      //     overflow: TextOverflow.ellipsis,
-      //     maxLines: 1,
-      //     textAlign: TextAlign.center,
-      //     style: const TextStyle(
-      //       color: colorTextApp,
-      //       fontSize: textfontSizeApp,
-      //       fontWeight: fontWeightMedium,
-      //       letterSpacing: letterSpacingSmall,
-      //     ),
-      //   ),
-      //   onPressed: () =>
-      //       ((!cinemaAndArea && fillterCinemas.isEmpty) ||
-      //           (cinemaAndArea && cinemasArea.isEmpty))
-      //       ? {}
-      //       : showCupertinoModalPopup(
-      //           context: context,
-      //           builder: (_) => Expanded(
-      //             child: Align(
-      //               alignment: Alignment.bottomCenter,
-      //               child: SizedBox(
-      //                 height: 350,
-      //                 child: BackdropFilter(
-      //                   filter: ImageFilter.blur(sigmaX: 3, sigmaY: 3),
-      //                   child: CupertinoPicker(
-      //                     backgroundColor: colorTextApp,
-      //                     itemExtent: 40,
-      //                     offAxisFraction: -0.8,
-      //                     diameterRatio: 1,
-      //                     squeeze: 1,
-      //                     scrollController: FixedExtentScrollController(
-      //                       initialItem: cinemaAndArea
-      //                           ? selectArea
-      //                           : selectCinema,
-      //                     ),
-      //                     onSelectedItemChanged: (index) =>
-      //                         handleFillterCinemas(index, cinemaAndArea),
-      //                     children: handleShowList(type),
-      //                   ),
-      //                 ),
-      //               ),
-      //             ),
-      //           ),
-      //         ),
-      // ),
     );
   }
 
@@ -581,10 +540,7 @@ class _DetailMovieScreenState extends ConsumerState<DetailMovieScreen> {
                                 Icons.star_rate_rounded,
                                 color: colorIcon,
                               ),
-                              Text(
-                                "${widget.detailMovie.movie.rate} / 5",
-                                style: style,
-                              ),
+                              Text("${movie.rate} / 5", style: style),
                               Container(
                                 margin: const EdgeInsets.symmetric(
                                   horizontal: spacingMedium,
@@ -609,9 +565,8 @@ class _DetailMovieScreenState extends ConsumerState<DetailMovieScreen> {
                                         score = value;
                                       });
                                     },
-                                    getMovieDate: () async {
-                                      await funcGetData();
-                                    },
+                                    getMovieDate: funcGetData,
+                                    returnRoute: '/detail_movie',
                                   );
                                 },
                                 child: Text(

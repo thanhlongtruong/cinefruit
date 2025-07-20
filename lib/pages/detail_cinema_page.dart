@@ -64,26 +64,34 @@ class _DetailCinemaPageState extends ConsumerState<DetailCinemaPage> {
   }
 
   Future<void> getMovieDate() async {
-    Get.dialog(Center(child: circularProgress), barrierDismissible: false);
+    final navigator = Navigator.of(context);
+    try {
+      Get.dialog(Center(child: circularProgress), barrierDismissible: false);
 
-    await ref.read(detailCinemaProvider(params).notifier).loadDetailCinema();
-    final state = ref.read(detailCinemaProvider(params));
+      await ref.read(detailCinemaProvider(params).notifier).loadDetailCinema();
+      final state = ref.read(detailCinemaProvider(params));
 
-    if (Get.isDialogOpen == true) {
-      Get.back();
-    }
+      if (navigator.canPop()) {
+        navigator.pop();
+      }
 
-    if (state.hasError) {
-      showSnackbar(
-        title: "Lỗi hệ thống",
-        message: "${state.error}",
-        type: "error",
-      );
-    } else {
-      final value = state.value;
-      setState(() {
-        detailCinemaState = value ?? [];
-      });
+      if (state.hasError) {
+        showSnackbar(
+          title: "Lỗi hệ thống",
+          message: "${state.error}",
+          type: "error",
+        );
+      } else {
+        final value = state.value;
+        setState(() {
+          detailCinemaState = value ?? [];
+        });
+      }
+    } catch (error) {
+      if (navigator.canPop()) {
+        navigator.pop();
+      }
+      showSnackbar(title: "Lỗi hệ thống", message: "$error", type: "error");
     }
   }
 
@@ -304,6 +312,7 @@ class _DetailCinemaPageState extends ConsumerState<DetailCinemaPage> {
                                       });
                                     },
                                     getMovieDate: getMovieDate,
+                                    returnRoute: '/detail_cinema',
                                   );
                                 },
                                 child: Text(

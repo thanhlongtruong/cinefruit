@@ -3,6 +3,7 @@ import 'package:ceni_fruit/config/const.dart';
 import 'package:ceni_fruit/config/show_snack_bar.dart';
 import 'package:ceni_fruit/config/styles.dart';
 import 'package:ceni_fruit/model/movie.dart';
+import 'package:ceni_fruit/provider/movie_hot_provider.dart';
 import 'package:ceni_fruit/provider/movie_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_rating_bar/flutter_rating_bar.dart';
@@ -21,6 +22,7 @@ Future<void> popupRatingMovie({
   required Movie movie,
   required Function(double) onScoreChanged,
   required VoidCallback getMovieDate,
+  required String returnRoute,
 }) async {
   double score = 0;
 
@@ -64,21 +66,28 @@ Future<void> popupRatingMovie({
             bottom: spacingMedium,
           ),
           buttonPadding: const EdgeInsets.all(spacingMedium),
-          content: RatingBar.builder(
-            minRating: 0,
-            maxRating: 5,
-            itemCount: 5,
-            allowHalfRating: true,
-            direction: Axis.horizontal,
-            wrapAlignment: WrapAlignment.spaceEvenly,
-            itemSize: 50,
-            itemBuilder: (context, index) =>
-                const Icon(Icons.star_rounded, color: colorIcon),
-            onRatingUpdate: (value) {
-              setState(() {
-                score = value;
-              });
-            },
+          content: IntrinsicHeight(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                RatingBar.builder(
+                  minRating: 0,
+                  maxRating: 5,
+                  itemCount: 5,
+                  allowHalfRating: true,
+                  direction: Axis.horizontal,
+                  wrapAlignment: WrapAlignment.spaceEvenly,
+                  itemSize: 50,
+                  itemBuilder: (context, index) =>
+                      const Icon(Icons.star_rounded, color: colorIcon),
+                  onRatingUpdate: (value) {
+                    setState(() {
+                      score = value;
+                    });
+                  },
+                ),
+              ],
+            ),
           ),
           actionsPadding: const EdgeInsets.only(
             right: spacingMedium,
@@ -103,6 +112,7 @@ Future<void> popupRatingMovie({
               width: 150,
               child: ElevatedButton(
                 onPressed: () async {
+                  final navigator = Navigator.of(context);
                   try {
                     Get.back();
 
@@ -115,8 +125,8 @@ Future<void> popupRatingMovie({
                         .read(movieServiceProvider)
                         .ratingMovie(movie.idMovie!, score);
 
-                    if (Get.isDialogOpen == true) {
-                      Get.back();
+                    if (navigator.canPop()) {
+                      navigator.pop();
                     }
 
                     if (!resultRatingMovie["success"]) {
@@ -129,22 +139,25 @@ Future<void> popupRatingMovie({
                               resultRatingMovie["typeError"] ==
                                   "Chưa được xác minh") {
                             NavigationHelper.goToLogin(
-                              returnRoute: '/detail_cinema',
+                              returnRoute: returnRoute,
                             );
                           }
                         },
                       );
                       return;
                     }
+
                     getMovieDate();
+                    await ref.read(movieHotProvider.notifier).loadMoviesHot();
+
                     showSnackbar(
                       title: "Đánh giá phim",
                       message: resultRatingMovie["message"],
                       type: "success",
                     );
                   } catch (error) {
-                    if (Get.isDialogOpen == true) {
-                      Get.back();
+                    if (navigator.canPop()) {
+                      navigator.pop();
                     }
 
                     showSnackbar(
