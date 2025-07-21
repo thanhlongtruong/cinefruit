@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:ceni_fruit/Router/navigation_hepler.dart';
 import 'package:ceni_fruit/config/background_app.dart';
+import 'package:ceni_fruit/config/button_call_again.dart';
 import 'package:ceni_fruit/config/const.dart';
 import 'package:ceni_fruit/config/convert_time.dart';
 import 'package:ceni_fruit/config/show_snack_bar.dart';
@@ -38,6 +39,13 @@ class BookedTicketPage extends ConsumerStatefulWidget {
 
 class _BookedTicketPageState extends ConsumerState<BookedTicketPage> {
   late HoldingSeatUserAndDiff? holdingSeatUser;
+
+  AppBar appBar = AppBar(
+    title: const Text("Lịch sử vé", style: tilteStyleApp),
+    backgroundColor: Colors.transparent,
+    iconTheme: IconThemeData(color: colorTextApp),
+    centerTitle: false,
+  );
 
   Widget buildItem(data, List<PaymentMethod> paymentMethodState) {
     DateTime parseDate(createdAt) {
@@ -512,12 +520,7 @@ class _BookedTicketPageState extends ConsumerState<BookedTicketPage> {
     if (userProfileState.value == null) {
       return Scaffold(
         extendBodyBehindAppBar: true,
-        appBar: AppBar(
-          title: const Text("Lịch sử vé", style: tilteStyleApp),
-          backgroundColor: Colors.transparent,
-          iconTheme: IconThemeData(color: colorTextApp),
-          centerTitle: false,
-        ),
+        appBar: appBar,
         backgroundColor: bgColorApp,
         body: Stack(
           children: [
@@ -550,30 +553,59 @@ class _BookedTicketPageState extends ConsumerState<BookedTicketPage> {
       if (stateHoldingSeat.isLoading ||
           stateOrderWithTicket.isLoading ||
           paymentMethod.isLoading) {
-        return buildLoadingScreen();
+        return buildLoadingScreen(background);
       } else if (stateHoldingSeat.hasError) {
-        return buildErrorScreen(
-          stateHoldingSeat.error,
-          stateHoldingSeat.stackTrace,
-          () async => await ref
-              .read(holdingSeatNofierProvider.notifier)
-              .getHoldingSeatUser(),
-        );
+        if (userProfileState.value?.role == "admin") {
+          return buildErrorScreen(
+            stateHoldingSeat.error,
+            stateHoldingSeat.stackTrace,
+            () async => await ref
+                .read(holdingSeatNofierProvider.notifier)
+                .getHoldingSeatUser(),
+          );
+        } else {
+          return buttonCallAgain(
+            appBar,
+            background,
+            () async => await ref
+                .read(holdingSeatNofierProvider.notifier)
+                .getHoldingSeatUser(),
+          );
+        }
       } else if (stateOrderWithTicket.hasError) {
-        return buildErrorScreen(
-          stateOrderWithTicket.error,
-          stateOrderWithTicket.stackTrace,
-          () async =>
-              await ref.read(getOrderWithTicketIdUser.notifier).loadTicket(),
-        );
+        if (userProfileState.value?.role == "admin") {
+          return buildErrorScreen(
+            stateOrderWithTicket.error,
+            stateOrderWithTicket.stackTrace,
+            () async =>
+                await ref.read(getOrderWithTicketIdUser.notifier).loadTicket(),
+          );
+        } else {
+          return buttonCallAgain(
+            appBar,
+            background,
+            () async =>
+                await ref.read(getOrderWithTicketIdUser.notifier).loadTicket(),
+          );
+        }
       } else if (paymentMethod.hasError) {
-        return buildErrorScreen(
-          paymentMethod.error,
-          paymentMethod.stackTrace,
-          () async => await ref
-              .read(paymentMethodNotifierProvider.notifier)
-              .loadPaymentMethod(),
-        );
+        if (userProfileState.value?.role == "admin") {
+          return buildErrorScreen(
+            paymentMethod.error,
+            paymentMethod.stackTrace,
+            () async => await ref
+                .read(paymentMethodNotifierProvider.notifier)
+                .loadPaymentMethod(),
+          );
+        } else {
+          return buttonCallAgain(
+            appBar,
+            background,
+            () async => await ref
+                .read(paymentMethodNotifierProvider.notifier)
+                .loadPaymentMethod(),
+          );
+        }
       }
 
       final holdingSeatUserAndDiff = stateHoldingSeat.value;

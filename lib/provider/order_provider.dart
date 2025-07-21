@@ -20,10 +20,7 @@ final getOrderWithTicketIdUser =
 class GetOrderWithTicket {
   Order order;
   List<Ticket> tickets;
-  GetOrderWithTicket({
-    required this.order,
-    required this.tickets,
-  });
+  GetOrderWithTicket({required this.order, required this.tickets});
 }
 
 class OrderProvider
@@ -41,6 +38,7 @@ class OrderProvider
       state = const AsyncValue.loading();
 
       final getTicket = await orderService.getOrderWithTicket();
+
       final List<GetOrderWithTicket> orders =
           (getTicket["data"]["orders"] as List)
               .map(

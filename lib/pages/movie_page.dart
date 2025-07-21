@@ -1,7 +1,9 @@
 import 'package:ceni_fruit/Router/navigation_hepler.dart';
+import 'package:ceni_fruit/config/button_call_again.dart';
 import 'package:ceni_fruit/config/show_snack_bar.dart';
 import 'package:ceni_fruit/model/detail_movie.dart';
 import 'package:ceni_fruit/provider/movie_room_provider.dart';
+import 'package:ceni_fruit/provider/user_profile_provider.dart';
 import 'package:get/get.dart';
 import 'package:intl/intl.dart';
 import 'package:ceni_fruit/config/const.dart';
@@ -163,15 +165,32 @@ class _MoviePageState extends ConsumerState<MoviePage> {
 
   @override
   Widget build(BuildContext context) {
-    final moviesAsync = ref.watch(movieProvider);
+    final userProfileState = ref.watch(userProfile);
     final backgroundImage = ref.read(backgroundMovieHot);
+    final moviesAsync = ref.watch(movieProvider);
     return moviesAsync.when(
-      loading: () => buildLoadingScreen(),
-      error: (error, stackTrace) => buildErrorScreen(
-        error,
-        stackTrace,
-        () => ref.read(movieProvider.notifier).refreshMovie(),
-      ),
+      loading: () => buildLoadingScreen(backgroundImage),
+      error: (error, stackTrace) {
+        if (userProfileState.value?.role == "admin") {
+          return buildErrorScreen(
+            error,
+            stackTrace,
+            () => ref.read(movieProvider.notifier).refreshMovie(),
+          );
+        } else {
+          return buttonCallAgain(
+            AppBar(
+              title: const Text("Danh sách phim", style: tilteStyleApp),
+              backgroundColor: Colors.transparent,
+              iconTheme: IconThemeData(color: colorTextApp),
+              centerTitle: false,
+            ),
+            backgroundImage,
+            () => ref.read(movieProvider.notifier).refreshMovie(),
+          );
+        }
+      },
+
       data: (movies) {
         allMovies = movies;
         if (inputSearch.text.isEmpty) {

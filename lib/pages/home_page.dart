@@ -1,9 +1,11 @@
 import 'dart:ui';
 import 'package:ceni_fruit/Router/navigation_hepler.dart';
+import 'package:ceni_fruit/config/button_call_again.dart';
 import 'package:ceni_fruit/config/const.dart';
 import 'package:ceni_fruit/config/show_snack_bar.dart';
 import 'package:ceni_fruit/model/detail_movie.dart';
 import 'package:ceni_fruit/provider/movie_room_provider.dart';
+import 'package:ceni_fruit/provider/user_profile_provider.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -219,6 +221,7 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final userProfileState = ref.watch(userProfile);
     final movieHotAsync = ref.watch(movieHotProvider);
 
     final screenHeight = MediaQuery.of(context).size.height;
@@ -231,12 +234,28 @@ class _HomePageState extends ConsumerState<HomePage> {
       ),
 
       child: movieHotAsync.when(
-        loading: () => buildLoadingScreen(),
-        error: (error, stack) => buildErrorScreen(
-          error,
-          stack,
-          () => ref.read(movieHotProvider.notifier).refreshMovieHot(),
-        ),
+        loading: () => buildLoadingScreen(imageBackground),
+        error: (error, stackTrace) {
+          if (userProfileState.value?.role == "admin") {
+            return buildErrorScreen(
+              error,
+              stackTrace,
+              () => ref.read(movieHotProvider.notifier).refreshMovieHot(),
+            );
+          } else {
+            return buttonCallAgain(
+              AppBar(
+                title: const Text("Phim nổi bật", style: tilteStyleApp),
+                backgroundColor: Colors.transparent,
+                iconTheme: IconThemeData(color: colorTextApp),
+                centerTitle: false,
+              ),
+              imageBackground,
+              () => ref.read(movieHotProvider.notifier).refreshMovieHot(),
+            );
+          }
+        },
+
         data: (movies) {
           if (movieSelect == null && movies.isNotEmpty) {
             movieSelect = movies[0];

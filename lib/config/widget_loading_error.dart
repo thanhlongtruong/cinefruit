@@ -1,34 +1,42 @@
+import 'package:ceni_fruit/config/background_app.dart';
 import 'package:ceni_fruit/config/style_login_register.dart';
 import "package:flutter/material.dart";
 import 'package:ceni_fruit/config/const.dart';
 import 'package:ceni_fruit/config/styles.dart';
 
-Widget buildLoadingScreen() {
+Widget buildLoadingScreen(String bg) {
   return Scaffold(
+    extendBodyBehindAppBar: true,
     backgroundColor: Colors.black,
-    body: Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          circularProgress,
-          const SizedBox(height: spacingMedium),
-          const Text(
-            'Đang tải...',
-            style: TextStyle(
-              color: colorTextApp,
-              letterSpacing: letterSpacingSmall,
-              fontSize: textfontSizeNote,
-              fontWeight: fontWeightNormal,
+    body: Stack(
+      children: [
+        if (bg.isNotEmpty) ...backgroundApp(bg),
+        SafeArea(
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                circularProgress,
+                const SizedBox(height: spacingMedium),
+                const Text(
+                  'Đang tải...',
+                  style: TextStyle(
+                    color: colorTextApp,
+                    letterSpacing: letterSpacingSmall,
+                    fontSize: textfontSizeNote,
+                    fontWeight: fontWeightNormal,
+                  ),
+                ),
+              ],
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     ),
   );
 }
 
 Widget buildErrorScreen(Object? error, [Object? stackTrace, Function? func]) {
-  print(error);
   return Scaffold(
     backgroundColor: Colors.red.shade600,
     body: SafeArea(

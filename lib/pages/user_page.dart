@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:ceni_fruit/Router/navigation_hepler.dart';
 import 'package:ceni_fruit/config/background_app.dart';
+import 'package:ceni_fruit/config/button_call_again.dart';
 import 'package:ceni_fruit/provider/movie_hot_provider.dart';
 import 'package:get/get.dart';
 import 'package:ceni_fruit/config/const.dart';
@@ -195,6 +196,13 @@ class _UserPageState extends ConsumerState<UserPage> {
     ];
   }
 
+  AppBar appBar = AppBar(
+    title: const Text("Tài khoản", style: tilteStyleApp),
+    automaticallyImplyLeading: false,
+    backgroundColor: Colors.transparent,
+    centerTitle: false,
+  );
+
   @override
   Widget build(BuildContext context) {
     final userProfileState = ref.watch(userProfile);
@@ -202,12 +210,7 @@ class _UserPageState extends ConsumerState<UserPage> {
     return userProfileState.when(
       data: (data) => Scaffold(
         extendBodyBehindAppBar: true,
-        appBar: AppBar(
-          title: const Text("Tài khoản", style: tilteStyleApp),
-          automaticallyImplyLeading: false,
-          backgroundColor: Colors.transparent,
-          centerTitle: false,
-        ),
+        appBar: appBar,
         backgroundColor: bgColorApp,
         body: Stack(
           children: [
@@ -265,12 +268,22 @@ class _UserPageState extends ConsumerState<UserPage> {
           ],
         ),
       ),
-      error: (error, stackTrace) => buildErrorScreen(
-        error,
-        stackTrace,
-        () => ref.read(userProfile.notifier).clearProfile(),
-      ),
-      loading: () => buildLoadingScreen(),
+      error: (error, stackTrace) {
+        if (userProfileState.value?.role == "admin") {
+          return buildErrorScreen(
+            error,
+            stackTrace,
+            () => ref.read(userProfile.notifier).clearProfile(),
+          );
+        } else {
+          return buttonCallAgain(
+            appBar,
+            background,
+            () => ref.read(userProfile.notifier).clearProfile(),
+          );
+        }
+      },
+      loading: () => buildLoadingScreen(background),
     );
   }
 }

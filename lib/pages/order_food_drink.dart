@@ -782,7 +782,7 @@ class _OrderFoodDrinkState extends ConsumerState<OrderFoodDrink> {
         ),
       ),
       error: (error, stackTrace) => buildErrorScreen(error, stackTrace),
-      loading: () => buildLoadingScreen(),
+      loading: () => buildLoadingScreen(widget.paramsOrderFoodDrink.movie.urlImage!),
     );
   }
 }

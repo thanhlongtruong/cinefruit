@@ -128,7 +128,25 @@ class _DetailMovieScreenState extends ConsumerState<DetailMovieScreen> {
           title: "Tài khoản",
           message: data["message"],
           type: "error",
-          func: () => NavigationHelper.goToLogin(returnRoute: '/detail_movie'),
+          func: () async {
+            if (data.containsKey("typeError") &&
+                data["typeError"] == "Chưa được xác minh") {
+              NavigationHelper.goToLogin(returnRoute: '/detail_movie');
+            } else if (data.containsKey("typeError") &&
+                data["typeError"] == "conflitRoom") {
+              try {
+                await ref.read(getOrderWithTicketIdUser.notifier).loadTicket();
+
+                NavigationHelper.goToHome(index: 2);
+              } catch (error) {
+                showSnackbar(
+                  title: "Lỗi hệ thống",
+                  message: "$error",
+                  type: "error",
+                );
+              }
+            }
+          },
         );
         return;
       }

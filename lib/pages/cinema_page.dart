@@ -1,5 +1,6 @@
 import 'package:ceni_fruit/Router/navigation_hepler.dart';
 import 'package:ceni_fruit/config/background_app.dart';
+import 'package:ceni_fruit/config/button_call_again.dart';
 import 'package:ceni_fruit/config/const.dart';
 import 'package:ceni_fruit/config/show_snack_bar.dart';
 import 'package:ceni_fruit/config/catch_network_image.dart';
@@ -7,6 +8,7 @@ import 'package:ceni_fruit/config/styles.dart';
 import 'package:ceni_fruit/config/widget_loading_error.dart';
 import 'package:ceni_fruit/provider/cinema_provider.dart';
 import 'package:ceni_fruit/provider/movie_hot_provider.dart';
+import 'package:ceni_fruit/provider/user_profile_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:ceni_fruit/model/cinema.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -128,7 +130,11 @@ class _CinemaPageState extends ConsumerState<CinemaPage> {
         }
       },
       child: Container(
-        padding: const EdgeInsets.all(spacingMedium),
+        padding: const EdgeInsets.only(
+          right: spacingMedium,
+          left: spacingMedium,
+          bottom: spacingBig,
+        ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           spacing: spacingMedium,
@@ -180,15 +186,31 @@ class _CinemaPageState extends ConsumerState<CinemaPage> {
 
   @override
   Widget build(BuildContext context) {
-    final cinemasAsync = ref.watch(cinemaProvider);
+    final userProfileState = ref.watch(userProfile);
     final bgApp = ref.read(backgroundMovieHot.notifier).state;
+    final cinemasAsync = ref.watch(cinemaProvider);
     return cinemasAsync.when(
-      loading: () => buildLoadingScreen(),
-      error: (error, stackTrace) => buildErrorScreen(
-        error,
-        stackTrace,
-        () => ref.read(cinemaProvider.notifier).refreshCinema(),
-      ),
+      loading: () => buildLoadingScreen(bgApp),
+      error: (error, stackTrace) {
+        if (userProfileState.value?.role == "admin") {
+          return buildErrorScreen(
+            error,
+            stackTrace,
+            () => ref.read(cinemaProvider.notifier).refreshCinema(),
+          );
+        } else {
+          return buttonCallAgain(
+            AppBar(
+              title: Text("Danh sách rạp", style: tilteStyleApp),
+              backgroundColor: Colors.transparent,
+              iconTheme: IconThemeData(color: colorTextApp),
+              centerTitle: false,
+            ),
+            bgApp,
+            () => ref.read(cinemaProvider.notifier).refreshCinema(),
+          );
+        }
+      },
       data: (cinemas) {
         allCinemas = cinemas;
         if (inputSearch.text.isEmpty) {
