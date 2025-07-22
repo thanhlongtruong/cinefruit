@@ -44,6 +44,38 @@ class _PayPageState extends ConsumerState<PayPage> {
     selectedPaymentMethod = widget.paramsPayPage.selectedPaymentMethod;
   }
 
+  Future<void> choosePaymentMethod(String paymentMethod) async {
+    final navigator = Navigator.of(context);
+
+    if (paymentMethod == "Paypal") {
+      try {
+        Get.dialog(Center(child: circularProgress), barrierDismissible: false);
+        final result = await getExchangeRate();
+        if (navigator.canPop()) {
+          navigator.pop();
+        }
+        if (!result["success"] || result["usd"] == null) {
+          showSnackbar(title: "USD", message: result["message"], type: "error");
+        }
+
+        setState(() {
+          price =
+              "${double.tryParse((currencyVND(widget.paramsPayPage.price) * result["usd"]).toStringAsFixed(2))} USD";
+          selectedPaymentMethod = paymentMethod;
+        });
+      } catch (e) {
+        if (navigator.canPop()) {
+          navigator.pop();
+        }
+        showSnackbar(title: "Lỗi hệ thống", message: "$e", type: "error");
+      }
+    } else {
+      setState(() {
+        selectedPaymentMethod = paymentMethod;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final time = convertTime(seatUser?.expiredAt ?? "");
@@ -417,50 +449,9 @@ class _PayPageState extends ConsumerState<PayPage> {
                         children: [
                           Expanded(
                             child: GestureDetector(
-                              onTap: () async {
-                                final navigator = Navigator.of(context);
-                                selectedPaymentMethod =
-                                    paymentMethods[index].paymentMethod;
-                                if (selectedPaymentMethod == "Paypal") {
-                                  try {
-                                    Get.dialog(
-                                      Center(child: circularProgress),
-                                      barrierDismissible: false,
-                                    );
-                                    final result = await getExchangeRate();
-                                    if (navigator.canPop()) {
-                                      navigator.pop();
-                                    }
-                                    if (!result["success"] ||
-                                        result["usd"] == null) {
-                                      showSnackbar(
-                                        title: "USD",
-                                        message: result["message"],
-                                        type: "error",
-                                      );
-                                    }
-
-                                    setState(() {
-                                      price =
-                                          "${double.tryParse((currencyVND(widget.paramsPayPage.price) * result["usd"]).toStringAsFixed(2))} USD";
-                                    });
-                                  } catch (e) {
-                                    if (navigator.canPop()) {
-                                      navigator.pop();
-                                    }
-                                    showSnackbar(
-                                      title: "Lỗi hệ thống",
-                                      message: "$e",
-                                      type: "error",
-                                    );
-                                  }
-                                } else {
-                                  setState(() {
-                                    selectedPaymentMethod =
-                                        paymentMethods[index].paymentMethod;
-                                  });
-                                }
-                              },
+                              onTap: () => choosePaymentMethod(
+                                paymentMethods[index].paymentMethod!,
+                              ),
                               child: Text(
                                 " ${paymentMethods[index].paymentMethod}",
                                 style: TextStyle(
@@ -484,9 +475,7 @@ class _PayPageState extends ConsumerState<PayPage> {
                             }),
                             value: paymentMethods[index].paymentMethod!,
                             groupValue: selectedPaymentMethod,
-                            onChanged: (value) => setState(() {
-                              selectedPaymentMethod = value;
-                            }),
+                            onChanged: (value) => choosePaymentMethod(value!),
                           ),
                         ],
                       ),
