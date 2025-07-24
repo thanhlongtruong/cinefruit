@@ -175,8 +175,8 @@ class _DetailCinemaPageState extends ConsumerState<DetailCinemaPage> {
         seatsDiff: seatsDiff,
         booked: bookedSeat,
       );
-
-      NavigationHelper.goToBooking(booking: params);
+      print(params);
+      // NavigationHelper.goToBooking(booking: params);
     } catch (error) {
       if (navigator.canPop()) {
         navigator.pop();

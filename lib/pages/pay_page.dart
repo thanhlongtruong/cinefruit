@@ -801,7 +801,10 @@ class _PayPageState extends ConsumerState<PayPage> {
                   }
                 },
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: selectedPaymentMethod != null
+                  backgroundColor:
+                      (selectedPaymentMethod != null &&
+                          selectedPaymentMethod != "" &&
+                          selectedPaymentMethod!.isNotEmpty)
                       ? colorButton
                       : hexColorPlaceHolder,
                   shape: RoundedRectangleBorder(
