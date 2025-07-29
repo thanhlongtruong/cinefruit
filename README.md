@@ -1,16 +1,33 @@
-# ceni_fruit
+Ngôn ngữ : [us English](README.en.md) | [🇻🇳 Tiếng Việt](README.md)
 
-A new Flutter project.
+# 🎬 Ứng dụng đặt vé xem phim - CineFruit
 
-## Getting Started
+Ứng dụng đặt vé xem phim nhanh chóng, đơn giản, tích hợp thanh toán trực tuyến và xem lịch chiếu theo rạp.
 
-This project is a starting point for a Flutter application.
+## 🔑 Các tính năng chính
 
-A few resources to get you started if this is your first Flutter project:
+- Đăng nhập, đăng kí, quên mật khẩu.
+- Suất chiếu theo phim và theo rạp.
+- Chọn ghế và giữ ghế trong thời gian nhất định.
+- Thanh toán Paypal và MoMo.
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## 🛠️ Công nghệ được sử dụng
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+- Flutter
+- Node.js + Express
+- MongoDB
+- JWT Authentication
+- Postman
+
+## 🔗 Liên kết
+
+- [▶️ Video Demo trên YouTube](https://youtu.be/tnN4lSVfiu0)
+- [🎨 Figma](https://www.figma.com/design/8ChFPpiqCMGcLMZakTx4xX/Untitled?node-id=0-1&t=UZjUx6fYn2vX5eHV-1)
+
+## 📧 Liên hệ
+
+- travfruit@gmail.com
+
+## Dự án khác
+
+- 🌐 [Website bán vé máy bay](https://github.com/thanhlongtruong/travFruit/tree/travFruit.v4)
