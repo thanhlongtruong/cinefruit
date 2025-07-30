@@ -31,7 +31,8 @@ final dioProvider = Provider<Dio>((ref) {
       ? 'http://127.0.0.1:2020'
       : 'http://localhost:2020';
 
-  const backupUrl = 'https://wh54v89v-2020.asse.devtunnels.ms';
+  // const backupUrl = 'https://wh54v89v-2020.asse.devtunnels.ms';
+  const backupUrl = "https://cinefruit-server.vercel.app";
 
   final dio = Dio(
     BaseOptions(
