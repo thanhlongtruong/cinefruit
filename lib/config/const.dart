@@ -25,14 +25,14 @@ Widget circularProgressBlack = Platform.isAndroid
 const urlBgApp = "";
 
 final dioProvider = Provider<Dio>((ref) {
-  final baseUrl = Platform.isAndroid
-      ? 'http://10.0.2.2:2020'
-      : Platform.isIOS
-      ? 'http://127.0.0.1:2020'
-      : 'http://localhost:2020';
+  // final baseUrl = Platform.isAndroid
+  //     ? 'http://10.0.2.2:2020'
+  //     : Platform.isIOS
+  //     ? 'http://127.0.0.1:2020'
+  //     : 'http://localhost:2020';
 
-  const backupUrl = 'https://wh54v89v-2020.asse.devtunnels.ms';
-  // const backupUrl = "https://cinefruit-server.vercel.app";
+  // const backupUrl = 'https://wh54v89v-2020.asse.devtunnels.ms';
+  const backupUrl = "https://cinefruit-server.vercel.app";
 
   final dio = Dio(
     BaseOptions(
